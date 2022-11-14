@@ -14,13 +14,10 @@ const Move = ({
   return (
     <div className="flex flex-col space-y-6">
       <GIF gifLink={gifLink}></GIF>
-      <div className="flex flex-col space-y-3">
+      <div className="flex flex-col space-y-2">
         <h1 className="text-4xl">{name}</h1>
         <div className="flex flex-col space-y-2">
-          <p>
-            Created by:{' '}
-            {createdBy ?? <span className="text-slate-400">unknown</span>}
-          </p>
+          {createdBy && <p>Created by: {createdBy}</p>}
           <p>
             Source:{' '}
             <a className="text-cyan-600" href={infoSrc}>

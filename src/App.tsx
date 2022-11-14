@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="flex flex-col items-center">
       <Layout>
-        <GradientText text={'💃 Dance Vocab Index'} />
+        <GradientText />
         <SearchBar
           searchString={queryText}
           onChange={(queryText: string) => setQueryText(queryText)}
