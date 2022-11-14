@@ -1,4 +1,4 @@
-export const GradientText = (): React.ReactElement => {
+export const Title = (): React.ReactElement => {
   return (
     <div className="py-16 flex flex-col items-center gap-8 justify-center bg-cool-gray-700">
       <h1 className="text-7xl">💃</h1>

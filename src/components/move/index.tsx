@@ -16,7 +16,7 @@ const Move = ({
       <GIF gifLink={gifLink}></GIF>
       <div className="flex flex-col space-y-2">
         <h1 className="text-4xl">{name}</h1>
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col space-y-2 opacity-70">
           {createdBy && <p>Created by: {createdBy}</p>}
           <p>
             Source:{' '}

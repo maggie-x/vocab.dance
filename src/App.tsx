@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './App.css';
-import { GradientText } from './components/gradient-text';
+import { Title } from './components/gradient-text';
 import { Layout } from './components/layout';
 import Move from './components/move';
 import { SearchBar } from './components/search-bar';
@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="flex flex-col items-center font-mono">
       <Layout>
-        <GradientText />
+        <Title />
         <SearchBar
           searchString={queryText}
           onChange={(queryText: string) => setQueryText(queryText)}
