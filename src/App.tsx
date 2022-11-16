@@ -40,6 +40,9 @@ const filterByString = (
   queryText: string,
   dataToFilter: Array<MoveType>
 ): Array<MoveType> => {
+  if (queryText === '') {
+    return dataToFilter;
+  }
   return dataToFilter.filter((move: MoveType) => {
     return move.name.toLowerCase().includes(queryText.toLowerCase());
   });
