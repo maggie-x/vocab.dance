@@ -13,14 +13,14 @@ export const SearchBar = ({
 
   return (
     <form>
-      <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-gray-300">
+      <label className="mb-2 text-sm font-medium text-zinc-500 sr-only">
         Search
       </label>
       <div className="relative">
         <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
           <svg
             aria-hidden="true"
-            className="w-5 h-5 text-gray-500 dark:text-gray-400"
+            className="w-5 h-5 text-zinc-500 dark:text-zinc-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -37,7 +37,7 @@ export const SearchBar = ({
         <input
           type="search"
           id="default-search"
-          className="block px-4 py-3 pl-10 w-full text-sm text-gray-300 bg-gray-900 rounded-md border border-gray-600 focus:border-pink-500 focus:outline-none"
+          className="block px-4 py-3 pl-10 w-full text-sm text-zinc-300 bg-zinc-900 rounded-md border border-zinc-700 focus:border-pink-500 focus:outline-none"
           placeholder="Search moves..."
           required
           value={queryText}
