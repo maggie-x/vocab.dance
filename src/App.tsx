@@ -12,7 +12,7 @@ function App() {
 
   const moves = filterByString(queryText, MOVES);
   return (
-    <div className="flex flex-col items-center font-mono bg-black text-white">
+    <div className="flex flex-col items-center font-mono bg-gray-900 text-white">
       <Layout>
         <Title />
         <SearchBar
@@ -22,6 +22,7 @@ function App() {
         <div className="mt-8 flex flex-col space-y-12">
           {moves.map((move) => (
             <Move
+              key={move.name}
               name={move.name}
               gifLink={move.gifLink}
               infoSrc={move.infoSrc}
