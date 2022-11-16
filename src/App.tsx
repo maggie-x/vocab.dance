@@ -12,7 +12,7 @@ function App() {
 
   const moves = filterByString(queryText, MOVES);
   return (
-    <div className="flex flex-col items-center font-mono">
+    <div className="flex flex-col items-center font-mono bg-black text-white">
       <Layout>
         <Title />
         <SearchBar

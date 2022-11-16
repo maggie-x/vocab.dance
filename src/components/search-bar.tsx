@@ -37,7 +37,7 @@ export const SearchBar = ({
         <input
           type="search"
           id="default-search"
-          className="block px-4 py-3 pl-10 w-full text-sm text-gray-900 bg-gray-50 rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+          className="block px-4 py-3 pl-10 w-full text-sm text-gray-300 bg-gray-900 rounded-xl border border-gray-600 focus:border-pink-500 focus:outline-none"
           placeholder="Search moves..."
           required
           value={queryText}
