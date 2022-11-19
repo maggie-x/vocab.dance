@@ -14,102 +14,133 @@ const HIPHOP_OLD_SCHOOL_DICTIONARY =
 const HIPHOP_MIDDLE_SCHOOL_DICTIONARY =
   'https://www.youtube.com/watch?v=YKZaTupQC0w';
 
+const HOUSE_OLD_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=I9Kgy4BHFGQ';
+
+const S3_BUCKET_URI = 'https://s3.ap-southeast-2.amazonaws.com/vocab.dance';
+
 export const HIP_HOP_MOVES: Array<Move> = [
-  {
-    name: 'Milly Rock',
-    gifLink: 'https://media.giphy.com/media/26ufpo2M9CL8oB1AI/giphy.gif',
-    infoSrc: 'https://www.google.com',
-    style: Style.HIP_HOP,
-  },
-  {
-    name: 'Harlem Shake',
-    gifLink: 'https://media.giphy.com/media/anRWvX6MDOq76/giphy.gif',
-    infoSrc: 'https://www.google.com',
-    style: Style.HIP_HOP,
-  },
+  // {
+  //   name: 'Milly Rock',
+  //   gifLink: 'https://media.giphy.com/media/26ufpo2M9CL8oB1AI/giphy.gif',
+  //   infoSrc: 'https://www.google.com',
+  //   style: Style.HIP_HOP,
+  // },
+  // {
+  //   name: 'Harlem Shake',
+  //   gifLink: 'https://media.giphy.com/media/anRWvX6MDOq76/giphy.gif',
+  //   infoSrc: 'https://www.google.com',
+  //   style: Style.HIP_HOP,
+  // },
   {
     name: 'Smurf',
-    gifLink: 'https://media.giphy.com/media/2K7oLHKvF16Cpbn9Rq/giphy.gif',
+    gifLink: `${S3_BUCKET_URI}/smurf.mp4`,
     infoSrc: HIPHOP_OLD_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Prep',
-    gifLink: 'https://media.giphy.com/media/tyINkZbSxDfhaL2Jij/giphy.gif',
+    gifLink: `${S3_BUCKET_URI}/prep.mp4`,
     infoSrc: HIPHOP_OLD_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Reebok',
-    gifLink: 'https://media.giphy.com/media/t8aZGFum1zIe2Loywo/giphy.gif',
+    gifLink: `${S3_BUCKET_URI}/reebok.mp4`,
     infoSrc: HIPHOP_OLD_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'The Wop',
-    gifLink: 'https://media.giphy.com/media/yuDh1GTjmyInc97DpW/giphy.gif',
+    gifLink: `${S3_BUCKET_URI}/the_wop.mp4`,
     infoSrc: HIPHOP_OLD_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Happy Feet',
-    gifLink:
-      'https://media.giphy.com/media/2t4PxAPqhLpbFhr6ju/giphy-downsized-large.gif',
+    gifLink: `${S3_BUCKET_URI}/happy_feet.mp4`,
     infoSrc: HIPHOP_OLD_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'The Fila',
-    gifLink: 'https://media.giphy.com/media/3HkutZ1oSBwfiKvdOe/giphy.gif',
+    gifLink: `${S3_BUCKET_URI}/the_fila.mp4`,
     infoSrc: HIPHOP_OLD_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Party Machine',
-    gifLink:
-      'https://media.giphy.com/media/mwNmUDu9qeXFVsYrRj/giphy-downsized-large.gif',
+    gifLink: `${S3_BUCKET_URI}/party_machine.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Running Man',
-    gifLink:
-      'https://media.giphy.com/media/iG6YElP3GbdIs41NVo/giphy-downsized-large.gif',
+    gifLink: `${S3_BUCKET_URI}/running_man.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Roger Rabbit',
-    gifLink: 'https://media.giphy.com/media/eEesC9ktvlz9f9RKO4/giphy.gif',
+    gifLink: `${S3_BUCKET_URI}/roger_rabbit.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Steve Martin',
-    gifLink:
-      'https://media.giphy.com/media/BGy7hw9b18eX1yT8Ks/giphy-downsized-large.gif',
+    gifLink: `${S3_BUCKET_URI}/steve_martin.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Bart Simpson',
-    gifLink:
-      'https://media.giphy.com/media/8ysnAFkhXP5te3IeZH/giphy-downsized-large.gif',
+    gifLink: `${S3_BUCKET_URI}/bart_simpson.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Brooklyn',
-    gifLink: 'https://media.giphy.com/media/wH57hBvtCyiZ6qfARW/giphy.gif',
+    gifLink: `${S3_BUCKET_URI}/brooklyn.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
   {
     name: 'Butterfly',
-    gifLink:
-      'https://media.giphy.com/media/FXMX5OfO3FezhukhgU/giphy-downsized-large.gif',
+    gifLink: `${S3_BUCKET_URI}/butterfly.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
+  },
+];
+
+export const HOUSE_MOVES: Array<Move> = [
+  {
+    name: 'Loose Legs',
+    gifLink: `${S3_BUCKET_URI}/loose_legs.mp4`,
+      infoSrc: HOUSE_OLD_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Swirl',
+    gifLink: `${S3_BUCKET_URI}/swirl.mp4`,
+      infoSrc: HOUSE_OLD_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Train',
+    gifLink: `${S3_BUCKET_URI}/train.mp4`,
+      infoSrc: HOUSE_OLD_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Farmer',
+    gifLink: `${S3_BUCKET_URI}/farmer.mp4`,
+      infoSrc: HOUSE_OLD_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Jack in the Box',
+    gifLink: `${S3_BUCKET_URI}/jack_in_the_box.mp4`,
+      infoSrc: HOUSE_OLD_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
   },
 ];
 
