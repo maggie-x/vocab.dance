@@ -10,11 +10,8 @@ import { MOVES, Move as MoveType } from './data/moves';
 
 function App() {
   const [queryText, setQueryText] = useState<string>('');
-  console.log(queryText);
 
   const filteredMoves = filterByString(queryText, MOVES);
-
-  console.log(filteredMoves.length);
 
   const {
     startIndex,

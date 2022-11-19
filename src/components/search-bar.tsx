@@ -42,7 +42,6 @@ export const SearchBar = ({
           required
           value={queryText}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-            console.log(e.target.value);
             setQueryText(e.target.value);
             onChange(e.target.value);
           }}
