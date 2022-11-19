@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { usePagination } from 'react-use-pagination';
 import './App.css';
+import Button from './components/button';
 import { Title } from './components/gradient-text';
 import { Layout } from './components/layout';
 import Move from './components/move';
@@ -10,7 +12,18 @@ function App() {
   const [queryText, setQueryText] = useState<string>('');
   console.log(queryText);
 
-  const moves = filterByString(queryText, MOVES);
+  const filteredMoves = filterByString(queryText, MOVES);
+
+  console.log(filteredMoves.length);
+
+  const { startIndex, endIndex, setPreviousPage, setNextPage, currentPage } =
+    usePagination({
+      totalItems: filteredMoves.length,
+      initialPageSize: 10,
+    });
+
+  const paginatedMoves = filteredMoves.slice(startIndex, endIndex);
+
   return (
     <div className="flex flex-col items-center font-mono bg-zinc-900 text-white">
       <Layout>
@@ -20,7 +33,7 @@ function App() {
           onChange={(queryText: string) => setQueryText(queryText)}
         />
         <div className="mt-8 flex flex-col space-y-12">
-          {moves.map((move) => (
+          {paginatedMoves.map((move) => (
             <Move
               key={move.name}
               name={move.name}
@@ -29,6 +42,25 @@ function App() {
               style={move.style}
             />
           ))}
+        </div>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex mt-6 justify-center">
+            <Button
+              onClick={() => {
+                setPreviousPage();
+                window.scrollTo(0, 0);
+              }}
+              ctaText="Previous"
+            />
+            <Button
+              onClick={() => {
+                setNextPage();
+                window.scrollTo(0, 0);
+              }}
+              ctaText="Next"
+            />
+          </div>
+          <span className="text-zinc-400">Page {currentPage + 1}</span>
         </div>
       </Layout>
     </div>
