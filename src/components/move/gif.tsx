@@ -9,6 +9,7 @@ const GIF = ({ gifLink }: { gifLink: string }): React.ReactElement => {
         autoPlay
         loop
         muted
+        playsInline
       >
         <source src={gifLink} type="video/mp4" />
         Your browser does not support the video tag.
