@@ -16,13 +16,23 @@ function App() {
 
   console.log(filteredMoves.length);
 
-  const { startIndex, endIndex, setPreviousPage, setNextPage, currentPage } =
-    usePagination({
-      totalItems: filteredMoves.length,
-      initialPageSize: 10,
-    });
+  const {
+    startIndex,
+    endIndex,
+    setPreviousPage,
+    setNextPage,
+    currentPage,
+    previousEnabled,
+    nextEnabled,
+  } = usePagination({
+    totalItems: filteredMoves.length,
+    initialPageSize: 10,
+  });
 
-  const paginatedMoves = filteredMoves.slice(startIndex, endIndex);
+  const paginatedMoves =
+    filteredMoves.length > 10
+      ? filteredMoves.slice(startIndex, endIndex)
+      : filteredMoves;
 
   return (
     <div className="flex flex-col items-center font-mono bg-zinc-900 text-white">
@@ -51,6 +61,7 @@ function App() {
                 window.scrollTo(0, 0);
               }}
               ctaText="Previous"
+              disabled={!previousEnabled}
             />
             <Button
               onClick={() => {
@@ -58,6 +69,7 @@ function App() {
                 window.scrollTo(0, 0);
               }}
               ctaText="Next"
+              disabled={!nextEnabled}
             />
           </div>
           <span className="text-zinc-400">Page {currentPage + 1}</span>
