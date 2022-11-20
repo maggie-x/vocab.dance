@@ -14,6 +14,8 @@ const HIPHOP_OLD_SCHOOL_DICTIONARY =
 const HIPHOP_MIDDLE_SCHOOL_DICTIONARY =
   'https://www.youtube.com/watch?v=YKZaTupQC0w';
 
+const HIPHOP_NEW_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=_bnLvdPOZpU';
+
 const HOUSE_OLD_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=I9Kgy4BHFGQ';
 
 const S3_BUCKET_URI = 'https://s3.ap-southeast-2.amazonaws.com/vocab.dance';
@@ -107,6 +109,48 @@ export const HIP_HOP_MOVES: Array<Move> = [
     name: 'Butterfly',
     gifLink: `${S3_BUCKET_URI}/butterfly.mp4`,
     infoSrc: HIPHOP_MIDDLE_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'ATL Stomp',
+    gifLink: `${S3_BUCKET_URI}/atl_stomp.mp4`,
+    infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Bankhead Bounce',
+    gifLink: `${S3_BUCKET_URI}/bankhead_bounce.mp4`,
+    infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Harlem Shake',
+    gifLink: `${S3_BUCKET_URI}/harlem_shake.mp4`,
+    infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Monestary',
+    gifLink: `${S3_BUCKET_URI}/monestary.mp4`,
+    infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Run It',
+    gifLink: `${S3_BUCKET_URI}/run_it.mp4`,
+    infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Skeeter Rabbit',
+    gifLink: `${S3_BUCKET_URI}/skeeter_rabbit.mp4`,
+    infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Walk It Out',
+    gifLink: `${S3_BUCKET_URI}/walk_it_out.mp4`,
+    infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
     style: Style.HIP_HOP,
   },
 ];
