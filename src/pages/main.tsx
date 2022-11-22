@@ -41,9 +41,7 @@ const Main = ({ moves }: MainProps) => {
           searchString={queryText}
           onChange={(queryText: string) => setQueryText(queryText)}
         />
-        <StyleFilter
-          handleStyleClick={(style) => navigate(`/styles/${style}`)}
-        />
+        <StyleFilter handleStyleClick={(style) => navigate(`/${style}`)} />
       </div>
       <div className="mt-8 flex flex-col space-y-12">
         {paginatedMoves.map((move) => (

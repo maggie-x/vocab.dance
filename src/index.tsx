@@ -11,7 +11,7 @@ const root = ReactDOM.createRoot(
 
 const router = createBrowserRouter([
   {
-    path: 'styles/:style',
+    path: '/:style',
     element: <App />,
   },
 

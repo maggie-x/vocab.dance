@@ -11,13 +11,19 @@ const StyleFilter = ({ handleStyleClick }: StyleFilterProps) => {
         className="hover:cursor-pointer"
         onClick={() => handleStyleClick('hip-hop')}
       >
-        <StyleLabel style={Style.HIP_HOP} />
+        <StyleLabel className="text-md" style={Style.HIP_HOP} />
       </button>
       <button
         className="hover:cursor-pointer"
         onClick={() => handleStyleClick('house')}
       >
-        <StyleLabel style={Style.HOUSE} />
+        <StyleLabel className="text-md" style={Style.HOUSE} />
+      </button>
+      <button
+        className="hover:cursor-pointer"
+        onClick={() => handleStyleClick('afro')}
+      >
+        <StyleLabel className="text-md" style={Style.AFRO} />
       </button>
     </div>
   );

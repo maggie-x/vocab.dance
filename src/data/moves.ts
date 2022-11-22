@@ -10,29 +10,22 @@ export interface Move {
 
 const HIPHOP_OLD_SCHOOL_DICTIONARY =
   'https://www.youtube.com/watch?v=RxHj0QMXYL4';
-
 const HIPHOP_MIDDLE_SCHOOL_DICTIONARY =
   'https://www.youtube.com/watch?v=YKZaTupQC0w';
-
 const HIPHOP_NEW_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=_bnLvdPOZpU';
 
 const HOUSE_OLD_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=I9Kgy4BHFGQ';
 
+const CHOP_DAILY_TOP_8 = 'https://www.youtube.com/watch?v=fShR0IMBagU';
+const CHOP_DAILY_NETWORK = 'https://www.youtube.com/watch?v=dRzdtpT6jQQ';
+
 const S3_BUCKET_URI = 'https://s3.ap-southeast-2.amazonaws.com/vocab.dance';
 
 export const HIP_HOP_MOVES: Array<Move> = [
-  // {
-  //   name: 'Milly Rock',
-  //   gifLink: 'https://media.giphy.com/media/26ufpo2M9CL8oB1AI/giphy.gif',
-  //   infoSrc: 'https://www.google.com',
-  //   style: Style.HIP_HOP,
-  // },
-  // {
-  //   name: 'Harlem Shake',
-  //   gifLink: 'https://media.giphy.com/media/anRWvX6MDOq76/giphy.gif',
-  //   infoSrc: 'https://www.google.com',
-  //   style: Style.HIP_HOP,
-  // },
+  // Milli Rock
+  // Harlem Shake
+  // Dougie
+  // Kangsta Wok
   {
     name: 'Smurf',
     gifLink: `${S3_BUCKET_URI}/smurf.mp4`,
@@ -188,4 +181,31 @@ export const HOUSE_MOVES: Array<Move> = [
   },
 ];
 
-export const MOVES: Array<Move> = [...HIP_HOP_MOVES];
+export const AFRO_MOVES: Array<Move> = [
+  {
+    name: 'Gwara Gwara',
+    gifLink: `${S3_BUCKET_URI}/gwara_gwara.mp4`,
+      infoSrc: CHOP_DAILY_TOP_8,
+      style: Style.AFRO,
+  },
+  {
+    name: 'Pilolo',
+    gifLink: `${S3_BUCKET_URI}/pilolo.mp4`,
+      infoSrc: CHOP_DAILY_TOP_8,
+      style: Style.AFRO,
+  },
+  {
+    name: 'Shaku Shaku',
+    gifLink: `${S3_BUCKET_URI}/shaku_shaku.mp4`,
+      infoSrc: CHOP_DAILY_TOP_8,
+      style: Style.AFRO,
+  },
+  {
+    name: 'Network',
+    gifLink: `${S3_BUCKET_URI}/network.mp4`,
+      infoSrc: CHOP_DAILY_NETWORK,
+      style: Style.AFRO,
+  },
+  // Azonto
+  // Shoki
+];
