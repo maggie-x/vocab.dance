@@ -14,7 +14,6 @@ const router = createBrowserRouter([
     path: '/:style',
     element: <App />,
   },
-
   {
     path: '/',
     element: <App />,
