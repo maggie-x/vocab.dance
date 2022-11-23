@@ -28,6 +28,7 @@ const Main = ({ moves }: MainProps) => {
     totalItems: filteredMoves.length,
     initialPageSize: 10,
   });
+  console.log('startIndex', startIndex);
 
   const paginatedMoves =
     filteredMoves.length > 10
@@ -75,7 +76,7 @@ const Main = ({ moves }: MainProps) => {
         <span className="text-sm text-gray-700 dark:text-gray-400">
           Showing{' '}
           <span className="font-semibold text-gray-900 dark:text-white">
-            {startIndex + 1}
+            {startIndex < 0 ? 0 : startIndex + 1}
           </span>{' '}
           to{' '}
           <span className="font-semibold text-gray-900 dark:text-white">
