@@ -9,7 +9,7 @@ const StyleFilter = ({ handleStyleClick }: StyleFilterProps) => {
     <div className="flex justify-center space-x-3">
       <button
         className="hover:cursor-pointer"
-        onClick={() => handleStyleClick('hip-hop')}
+        onClick={() => handleStyleClick('hiphop')}
       >
         <StyleLabel className="text-md" style={Style.HIP_HOP} />
       </button>

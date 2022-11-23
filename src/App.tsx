@@ -23,7 +23,7 @@ export default App;
 
 const getMovesFromStyle = (style: string | undefined): Array<Move> => {
   switch (style) {
-    case 'hip-hop':
+    case 'hiphop':
       return HIP_HOP_MOVES.slice().reverse();
     case 'house':
       return HOUSE_MOVES;
