@@ -73,7 +73,21 @@ const Main = ({ moves }: MainProps) => {
             disabled={!nextEnabled}
           />
         </div>
-        <span className="text-zinc-400">Page {currentPage + 1}</span>
+        <span className="text-sm text-gray-700 dark:text-gray-400">
+          Showing{' '}
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {startIndex + 1}
+          </span>{' '}
+          to{' '}
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {endIndex + 1}
+          </span>{' '}
+          of{' '}
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {moves.length}
+          </span>{' '}
+          Entries
+        </span>
       </div>{' '}
     </>
   );
