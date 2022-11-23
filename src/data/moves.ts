@@ -189,6 +189,12 @@ export const HIP_HOP_MOVES: Array<Move> = [
     infoSrc: RHHYME_KOKO,
     style: Style.HIP_HOP,
   },
+  {
+    name: 'Dougie',
+    gifLink: `${S3_BUCKET_URI}/dougie.mp4`,
+    infoSrc: 'https://www.youtube.com/watch?v=Gw_3dGCARGY',
+    style: Style.HIP_HOP,
+  },
 ];
 
 export const HOUSE_MOVES: Array<Move> = [
