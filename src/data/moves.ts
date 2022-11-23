@@ -13,6 +13,7 @@ const HIPHOP_OLD_SCHOOL_DICTIONARY =
 const HIPHOP_MIDDLE_SCHOOL_DICTIONARY =
   'https://www.youtube.com/watch?v=YKZaTupQC0w';
 const HIPHOP_NEW_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=_bnLvdPOZpU';
+const RHHYME_KOKO = 'https://www.youtube.com/watch?v=QyRxfz9Lesc';
 
 const HOUSE_OLD_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=I9Kgy4BHFGQ';
 
@@ -26,6 +27,12 @@ export const HIP_HOP_MOVES: Array<Move> = [
   // Harlem Shake
   // Dougie
   // Kangsta Wok
+  {
+    name: 'Cabbage Patch',
+    gifLink: `${S3_BUCKET_URI}/cabbage_patch.mp4`,
+    infoSrc: HIPHOP_OLD_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
   {
     name: 'Smurf',
     gifLink: `${S3_BUCKET_URI}/smurf.mp4`,
@@ -144,6 +151,42 @@ export const HIP_HOP_MOVES: Array<Move> = [
     name: 'Walk It Out',
     gifLink: `${S3_BUCKET_URI}/walk_it_out.mp4`,
     infoSrc: HIPHOP_NEW_SCHOOL_DICTIONARY,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'ALF',
+    gifLink: `${S3_BUCKET_URI}/alf.mp4`,
+    infoSrc: RHHYME_KOKO,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Biz Markie',
+    gifLink: `${S3_BUCKET_URI}/biz_markie.mp4`,
+    infoSrc: RHHYME_KOKO,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Cat Daddy',
+    gifLink: `${S3_BUCKET_URI}/cat_daddy.mp4`,
+    infoSrc: RHHYME_KOKO,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Charleston',
+    gifLink: `${S3_BUCKET_URI}/charleston.mp4`,
+    infoSrc: RHHYME_KOKO,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Robocup',
+    gifLink: `${S3_BUCKET_URI}/robocup.mp4`,
+    infoSrc: RHHYME_KOKO,
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'V Step',
+    gifLink: `${S3_BUCKET_URI}/v_step.mp4`,
+    infoSrc: RHHYME_KOKO,
     style: Style.HIP_HOP,
   },
 ];

@@ -21,7 +21,7 @@ const Move = ({
       <div className="flex flex-col space-y-2 p-6 mt-2">
         <h1 className="text-2xl font-semibold text-zinc-100">{name}</h1>
         {style && <StyleLabel style={style} />}
-        <div className="flex flex-col space-y-2 opacity-70">
+        <div className="flex flex-col space-y-2 opacity-70 text-sm">
           {createdBy && <p>Created by: {createdBy}</p>}
           <p>
             Source:{' '}

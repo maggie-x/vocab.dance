@@ -24,12 +24,12 @@ export default App;
 const getMovesFromStyle = (style: string | undefined): Array<Move> => {
   switch (style) {
     case 'hip-hop':
-      return HIP_HOP_MOVES;
+      return HIP_HOP_MOVES.slice().reverse();
     case 'house':
       return HOUSE_MOVES;
     case 'afro':
       return AFRO_MOVES;
     default:
-      return HIP_HOP_MOVES;
+      return HIP_HOP_MOVES.slice().reverse();
   }
 };
