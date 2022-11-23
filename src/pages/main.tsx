@@ -22,7 +22,6 @@ const Main = ({ moves }: MainProps) => {
     endIndex,
     setPreviousPage,
     setNextPage,
-    currentPage,
     previousEnabled,
     nextEnabled,
   } = usePagination({
