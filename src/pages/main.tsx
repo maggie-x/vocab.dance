@@ -28,7 +28,6 @@ const Main = ({ moves }: MainProps) => {
     totalItems: filteredMoves.length,
     initialPageSize: 10,
   });
-  console.log('startIndex', startIndex);
 
   const paginatedMoves =
     filteredMoves.length > 10

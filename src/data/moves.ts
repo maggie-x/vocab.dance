@@ -23,9 +23,6 @@ const CHOP_DAILY_NETWORK = 'https://www.youtube.com/watch?v=dRzdtpT6jQQ';
 const S3_BUCKET_URI = 'https://s3.ap-southeast-2.amazonaws.com/vocab.dance';
 
 export const HIP_HOP_MOVES: Array<Move> = [
-  // Milli Rock
-  // Harlem Shake
-  // Dougie
   // Kangsta Wok
   {
     name: 'Cabbage Patch',
@@ -193,6 +190,18 @@ export const HIP_HOP_MOVES: Array<Move> = [
     name: 'Dougie',
     gifLink: `${S3_BUCKET_URI}/dougie.mp4`,
     infoSrc: 'https://www.youtube.com/watch?v=Gw_3dGCARGY',
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Milly Rock',
+    gifLink: `${S3_BUCKET_URI}/milly_rock.mp4`,
+    infoSrc: 'https://giphy.com/gifs/kcamp427-k-camp-lyric-ave-427-26ufpo2M9CL8oB1AI',
+    style: Style.HIP_HOP,
+  },
+  {
+    name: 'Kangsta Wok',
+    gifLink: `${S3_BUCKET_URI}/kangsta_wok.mp4`,
+    infoSrc: 'https://www.youtube.com/watch?v=gyDxyZpG0iI',
     style: Style.HIP_HOP,
   },
 ];
