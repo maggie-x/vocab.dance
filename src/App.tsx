@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useTitle } from 'react-use';
 import './App.css';
+import Feedback from './components/feedback';
 import { Title } from './components/gradient-text';
 import { Layout } from './components/layout';
 import { Style } from './components/style';
@@ -22,6 +23,7 @@ function App() {
       <Layout>
         <Title />
         <Main moves={moves} />
+        <Feedback />
       </Layout>
     </div>
   );
