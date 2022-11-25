@@ -42,7 +42,7 @@ const Main = ({ moves }: MainProps) => {
         />
         <StyleFilter handleStyleClick={(style) => navigate(`/${style}`)} />
       </div>
-      <div className="mt-8 flex flex-col space-y-12">
+      <div className="mt-12 flex flex-col space-y-12">
         {paginatedMoves.map((move) => (
           <Move
             key={move.name}
@@ -83,7 +83,7 @@ const Main = ({ moves }: MainProps) => {
           </span>{' '}
           of{' '}
           <span className="font-semibold text-gray-900 dark:text-white">
-            {moves.length}
+            {filteredMoves.length}
           </span>{' '}
           Entries
         </span>

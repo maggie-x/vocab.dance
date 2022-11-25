@@ -16,6 +16,7 @@ const HIPHOP_NEW_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=_bnLvdPOZp
 const RHHYME_KOKO = 'https://www.youtube.com/watch?v=QyRxfz9Lesc';
 
 const HOUSE_OLD_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=I9Kgy4BHFGQ';
+const HOUSE_NEXT_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=1jb2LaUirog';
 
 const CHOP_DAILY_TOP_8 = 'https://www.youtube.com/watch?v=fShR0IMBagU';
 const CHOP_DAILY_NETWORK = 'https://www.youtube.com/watch?v=dRzdtpT6jQQ';
@@ -235,6 +236,36 @@ export const HOUSE_MOVES: Array<Move> = [
     name: 'Jack in the Box',
     gifLink: `${S3_BUCKET_URI}/jack_in_the_box.mp4`,
       infoSrc: HOUSE_OLD_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Shuffle & Dodge',
+    gifLink: `${S3_BUCKET_URI}/shuffle_and_dodge.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Gallop',
+    gifLink: `${S3_BUCKET_URI}/gallop.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Gallop Shuffle',
+    gifLink: `${S3_BUCKET_URI}/gallop_shuffle.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Gallop Shuffle Cross',
+    gifLink: `${S3_BUCKET_URI}/gallop_shuffle_cross.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Can Opener',
+    gifLink: `${S3_BUCKET_URI}/can_opener.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY,
       style: Style.HOUSE,
   },
 ];
