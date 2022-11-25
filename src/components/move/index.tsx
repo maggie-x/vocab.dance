@@ -25,7 +25,12 @@ const Move = ({
           {createdBy && <p>Created by: {createdBy}</p>}
           <p>
             Source:{' '}
-            <a className="text-yellow-200" href={infoSrc}>
+            <a
+              className="text-yellow-200"
+              href={infoSrc}
+              target="_blank"
+              rel="noreferrer"
+            >
               {infoSrc}
             </a>
           </p>
