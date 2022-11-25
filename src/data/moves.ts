@@ -17,6 +17,7 @@ const RHHYME_KOKO = 'https://www.youtube.com/watch?v=QyRxfz9Lesc';
 
 const HOUSE_OLD_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=I9Kgy4BHFGQ';
 const HOUSE_NEXT_SCHOOL_DICTIONARY = 'https://www.youtube.com/watch?v=1jb2LaUirog';
+const HOUSE_NEXT_SCHOOL_DICTIONARY_PART_2 = 'https://www.youtube.com/watch?v=7NTnGuxuToU';
 
 const CHOP_DAILY_TOP_8 = 'https://www.youtube.com/watch?v=fShR0IMBagU';
 const CHOP_DAILY_NETWORK = 'https://www.youtube.com/watch?v=dRzdtpT6jQQ';
@@ -266,6 +267,30 @@ export const HOUSE_MOVES: Array<Move> = [
     name: 'Can Opener',
     gifLink: `${S3_BUCKET_URI}/can_opener.mp4`,
       infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Triangle',
+    gifLink: `${S3_BUCKET_URI}/triangle.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY_PART_2,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Roger Rabbit',
+    gifLink: `${S3_BUCKET_URI}/roger_rabbit.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY_PART_2,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Diamond',
+    gifLink: `${S3_BUCKET_URI}/diamond.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY_PART_2,
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Lotus',
+    gifLink: `${S3_BUCKET_URI}/lotus.mp4`,
+      infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY_PART_2,
       style: Style.HOUSE,
   },
 ];
