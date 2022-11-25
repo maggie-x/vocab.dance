@@ -25,7 +25,6 @@ const CHOP_DAILY_NETWORK = 'https://www.youtube.com/watch?v=dRzdtpT6jQQ';
 const S3_BUCKET_URI = 'https://s3.ap-southeast-2.amazonaws.com/vocab.dance';
 
 export const HIP_HOP_MOVES: Array<Move> = [
-  // Kangsta Wok
   {
     name: 'Cabbage Patch',
     gifLink: `${S3_BUCKET_URI}/cabbage_patch.mp4`,
