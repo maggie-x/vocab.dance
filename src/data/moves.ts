@@ -292,6 +292,18 @@ export const HOUSE_MOVES: Array<Move> = [
       infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY_PART_2,
       style: Style.HOUSE,
   },
+  {
+    name: 'Side Walk',
+    gifLink: `${S3_BUCKET_URI}/side_walk.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=fKaJBjIppXE',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Chase',
+    gifLink: `${S3_BUCKET_URI}/chase.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=3auLqkKdc18',
+      style: Style.HOUSE,
+  },
 ];
 
 export const AFRO_MOVES: Array<Move> = [
