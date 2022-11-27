@@ -304,6 +304,54 @@ export const HOUSE_MOVES: Array<Move> = [
       infoSrc: 'https://www.youtube.com/watch?v=3auLqkKdc18',
       style: Style.HOUSE,
   },
+  {
+    name: 'Crosswalk',
+    gifLink: `${S3_BUCKET_URI}/crosswalk.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=Z7zcCSak16o',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Skate',
+    gifLink: `${S3_BUCKET_URI}/skate.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=Ckh17PQ8iZ0',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Spongebob',
+    gifLink: `${S3_BUCKET_URI}/spongebob.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=u9zIOc9mwJE',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Cross Step Drag',
+    gifLink: `${S3_BUCKET_URI}/cross_step_drag.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=49didNXeUGY',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Around The World',
+    gifLink: `${S3_BUCKET_URI}/around_the_world.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=Rb99CKKr4Z0',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Pivoting Skate',
+    gifLink: `${S3_BUCKET_URI}/pivoting_skate.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=-gtSTaHhaxA',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Salsa Step',
+    gifLink: `${S3_BUCKET_URI}/salsa_step.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=cxWEbJFM5YI',
+      style: Style.HOUSE,
+  },
+  {
+    name: 'Criss Cross',
+    gifLink: `${S3_BUCKET_URI}/criss_cross.mp4`,
+      infoSrc: 'https://www.youtube.com/watch?v=s_TXekHFkWc',
+      style: Style.HOUSE,
+  },
 ];
 
 export const AFRO_MOVES: Array<Move> = [
