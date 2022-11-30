@@ -276,7 +276,7 @@ export const HOUSE_MOVES: Array<Move> = [
   },
   {
     name: 'Roger Rabbit',
-    gifLink: `${S3_BUCKET_URI}/roger_rabbit.mp4`,
+    gifLink: `${S3_BUCKET_URI}/roger_rabbit_house.mp4`,
       infoSrc: HOUSE_NEXT_SCHOOL_DICTIONARY_PART_2,
       style: Style.HOUSE,
   },
