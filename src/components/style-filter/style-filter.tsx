@@ -42,6 +42,17 @@ const StyleFilter = ({ handleStyleClick, activeStyle }: StyleFilterProps) => {
           style={Style.AFRO}
         />
       </button>
+      <button
+        className="hover:cursor-pointer"
+        onClick={() => handleStyleClick('litefeet')}
+      >
+        <StyleLabel
+          className={clsx('text-md', {
+            'opacity-50': activeStyle !== Style.LITEFEET,
+          })}
+          style={Style.LITEFEET}
+        />
+      </button>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { Title } from './components/gradient-text';
 import { Layout } from './components/layout';
 import { Style } from './components/style';
 import { AFRO_MOVES, HIP_HOP_MOVES, HOUSE_MOVES, Move } from './data';
+import { LITEFEET_MOVES } from './data/litefeet';
 import Main from './pages/main';
 
 function App() {
@@ -39,6 +40,8 @@ const getMovesFromStyle = (style: string | undefined): Array<Move> => {
       return HOUSE_MOVES;
     case 'afro':
       return AFRO_MOVES;
+    case 'litefeet':
+      return LITEFEET_MOVES;
     default:
       return HIP_HOP_MOVES.slice().reverse();
   }
@@ -52,6 +55,8 @@ const getStyleFromURI = (style: string | undefined): Style | undefined => {
       return Style.HOUSE;
     case 'afro':
       return Style.AFRO;
+    case 'litefeet':
+      return Style.LITEFEET;
     default:
       return undefined;
   }
