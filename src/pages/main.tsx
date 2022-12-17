@@ -92,20 +92,17 @@ const Main = ({ moves, style = Style.HIP_HOP }: MainProps) => {
             disabled={!nextEnabled}
           />
         </div>
-        <span className="text-sm text-gray-700 dark:text-gray-400">
+        <span className="text-sm text-gray-500">
           Showing{' '}
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-gray-300">
             {startIndex < 0 ? 0 : startIndex + 1}
-          </span>{' '}
-          to{' '}
-          <span className="font-semibold text-gray-900 dark:text-white">
-            {endIndex + 1}
-          </span>{' '}
+          </span>
+          -<span className="font-semibold text-gray-300">{endIndex + 1}</span>{' '}
           of{' '}
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <span className="font-semibold text-gray-300">
             {filteredMoves.length}
           </span>{' '}
-          Entries
+          moves
         </span>
       </div>{' '}
     </>
