@@ -6,7 +6,7 @@ import Move from '../components/move';
 import { SearchBar } from '../components/search-bar';
 import { Style } from '../components/style';
 import StyleFilter from '../components/style-filter/style-filter';
-import { Move as MoveType } from '../data/moves';
+import { Move as MoveType } from '../data/config';
 
 interface MainProps {
   moves: Array<MoveType>;

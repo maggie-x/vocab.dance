@@ -5,7 +5,7 @@ import Feedback from './components/feedback';
 import { Title } from './components/gradient-text';
 import { Layout } from './components/layout';
 import { Style } from './components/style';
-import { AFRO_MOVES, HIP_HOP_MOVES, HOUSE_MOVES, Move } from './data/moves';
+import { AFRO_MOVES, HIP_HOP_MOVES, HOUSE_MOVES, Move } from './data';
 import Main from './pages/main';
 
 function App() {
