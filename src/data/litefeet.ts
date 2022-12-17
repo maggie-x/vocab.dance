@@ -42,4 +42,22 @@ export const LITEFEET_MOVES: Array<Move> = [
     infoSrc: FIFTY_CLASSIC_LITEFEET_MOVES_ESOLO,
     style: Style.LITEFEET,
   },
+  {
+    name: 'All In',
+    gifLink: `${S3_BUCKET_URI}/litefeet/all_in.mp4`,
+    infoSrc: FIFTY_CLASSIC_LITEFEET_MOVES_ESOLO,
+    style: Style.LITEFEET,
+  },
+  {
+    name: 'Tic Tac Toe',
+    gifLink: `${S3_BUCKET_URI}/litefeet/tic_tac_toe.mp4`,
+    infoSrc: FIFTY_CLASSIC_LITEFEET_MOVES_ESOLO,
+    style: Style.LITEFEET,
+  },
+  {
+    name: 'Buck One',
+    gifLink: `${S3_BUCKET_URI}/litefeet/buck_one.mp4`,
+    infoSrc: FIFTY_CLASSIC_LITEFEET_MOVES_ESOLO,
+    style: Style.LITEFEET,
+  },
 ];
