@@ -22,7 +22,7 @@ function App() {
     <div className="flex flex-col items-center font-mono bg-zinc-900 text-white">
       <Layout>
         <Title />
-        <Main moves={moves} />
+        <Main moves={moves} style={styleEnum} />
         <Feedback />
       </Layout>
     </div>

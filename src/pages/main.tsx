@@ -4,14 +4,16 @@ import { usePagination } from 'react-use-pagination';
 import Button from '../components/button';
 import Move from '../components/move';
 import { SearchBar } from '../components/search-bar';
+import { Style } from '../components/style';
 import StyleFilter from '../components/style-filter/style-filter';
 import { Move as MoveType } from '../data/moves';
 
 interface MainProps {
   moves: Array<MoveType>;
+  style?: Style;
 }
 
-const Main = ({ moves }: MainProps) => {
+const Main = ({ moves, style = Style.HIP_HOP }: MainProps) => {
   const navigate = useNavigate();
   const [queryText, setQueryText] = useState<string>('');
 
@@ -33,14 +35,20 @@ const Main = ({ moves }: MainProps) => {
     filteredMoves.length > 10
       ? filteredMoves.slice(startIndex, endIndex + 1)
       : filteredMoves;
+
+  const noMovesFound = filteredMoves.length === 0;
   return (
     <>
       <div className="flex flex-col space-y-3">
+        <StyleFilter
+          activeStyle={style}
+          handleStyleClick={(style) => navigate(`/${style}`)}
+        />
         <SearchBar
           searchString={queryText}
           onChange={(queryText: string) => setQueryText(queryText)}
+          placeholderText={`Search ${style.toString().toLowerCase()} moves...`}
         />
-        <StyleFilter handleStyleClick={(style) => navigate(`/${style}`)} />
       </div>
       <div className="mt-12 flex flex-col space-y-12">
         {paginatedMoves.map((move) => (
@@ -52,6 +60,18 @@ const Main = ({ moves }: MainProps) => {
             style={move.style}
           />
         ))}
+        {noMovesFound && (
+          <div className="flex flex-col gap-y-2 px-6 mb-4">
+            <div className="text-center text-zinc-400">
+              No moves found for <br /> '{queryText}'.
+            </div>
+            <div className="text-center text-zinc-400 text-xs">
+              If you're looking for moves of a style other than {style}, please
+              click on the desired style above the search bar to switch between
+              style modes.
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex flex-col items-center space-y-4">
         <div className="flex mt-6 justify-center">

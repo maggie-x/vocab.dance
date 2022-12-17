@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 interface SearchBarProps {
   searchString: string;
   onChange: (queryText: string) => void;
+  placeholderText: string;
 }
 
 export const SearchBar = ({
   searchString,
   onChange,
+  placeholderText,
 }: SearchBarProps): React.ReactElement => {
   const [queryText, setQueryText] = useState<string>(searchString);
 
@@ -38,7 +40,7 @@ export const SearchBar = ({
           type="search"
           id="default-search"
           className="block px-4 py-3 pl-10 w-full text-sm text-zinc-300 bg-zinc-900 rounded-md border border-zinc-700 focus:border-pink-500 focus:outline-none"
-          placeholder="Search moves..."
+          placeholder={placeholderText}
           required
           value={queryText}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
