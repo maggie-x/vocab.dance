@@ -11,9 +11,10 @@ const VIEW_OPTIONS: Array<{ mode: ViewMode; label: string }> = [
 interface ViewMenuProps {
   viewMode: ViewMode;
   onChange: (mode: ViewMode) => void;
+  onAbout: () => void;
 }
 
-const ViewMenu = ({ viewMode, onChange }: ViewMenuProps) => {
+const ViewMenu = ({ viewMode, onChange, onAbout }: ViewMenuProps) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +49,7 @@ const ViewMenu = ({ viewMode, onChange }: ViewMenuProps) => {
     <div ref={menuRef} className="fixed top-4 left-4 z-10">
       <button
         type="button"
-        aria-label="View options"
+        aria-label="Menu"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((wasOpen) => !wasOpen)}
@@ -80,6 +81,20 @@ const ViewMenu = ({ viewMode, onChange }: ViewMenuProps) => {
               </button>
             </li>
           ))}
+          <li role="separator" className="my-1 border-t border-zinc-700" />
+          <li role="none">
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                onAbout();
+              }}
+              className="flex w-full items-center px-4 py-2 text-left text-zinc-300 hover:bg-zinc-700"
+            >
+              About
+            </button>
+          </li>
         </ul>
       )}
     </div>

@@ -98,7 +98,7 @@ export const SearchBar = ({
             aria-expanded={showResults}
             aria-controls="move-search-results"
             aria-autocomplete="list"
-            className="block px-4 py-3 pl-10 w-full text-sm text-zinc-300 bg-zinc-900 rounded-md border border-zinc-700 focus:border-pink-500 focus:outline-none"
+            className="block px-4 py-3 pl-10 w-full text-base md:text-sm text-zinc-300 bg-zinc-900 rounded-md border border-zinc-700 focus:border-pink-500 focus:outline-none"
             placeholder={placeholderText}
             value={searchString}
             onChange={(e) => {
