@@ -2,11 +2,20 @@ import { Link } from 'react-router-dom';
 import { Move as MoveType, movePath } from '../../data/config';
 import StyleLabel from '../style';
 import { posterFor } from './gif';
+import SourceCaution from './source-caution';
 
-const MoveRow = ({ name, gifLink, infoSrc, style }: MoveType): React.ReactElement => {
+const MoveRow = ({
+  name,
+  gifLink,
+  infoSrc,
+  style,
+}: MoveType): React.ReactElement => {
   return (
     <li className="flex items-center gap-4 py-3 border-b border-zinc-800 last:border-b-0">
-      <Link to={movePath(style, name)} className="flex items-center gap-4 min-w-0 group">
+      <Link
+        to={movePath(style, name)}
+        className="flex items-center gap-4 min-w-0 group"
+      >
         <img
           src={posterFor(gifLink)}
           alt=""
@@ -27,6 +36,7 @@ const MoveRow = ({ name, gifLink, infoSrc, style }: MoveType): React.ReactElemen
         >
           Source
         </a>
+        <SourceCaution infoSrc={infoSrc} />
       </div>
     </li>
   );
