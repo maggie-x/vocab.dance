@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const posterFor = (gifLink: string): string => {
+export const posterFor = (gifLink: string): string => {
   const fileName = gifLink.substring(gifLink.lastIndexOf('/') + 1);
   return `/posters/${fileName.replace(/\.mp4$/, '.jpg')}`;
 };

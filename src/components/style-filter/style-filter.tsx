@@ -10,7 +10,7 @@ interface StyleFilterProps {
 
 const StyleFilter = ({ handleStyleClick, activeStyle }: StyleFilterProps) => {
   return (
-    <div className="flex justify-center space-x-3">
+    <div className="flex flex-wrap justify-center gap-3">
       {STYLE_SLUGS.map((slug) => (
         <button
           key={slug}

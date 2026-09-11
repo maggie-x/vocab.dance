@@ -5,11 +5,11 @@ const Feedback = () => {
         Made with 💗 by Maggie (
         <a
           className="text-orange-400"
-          href="https://www.instagram.com/mmaggiex_/"
+          href="https://www.instagram.com/maggieex_/"
           target="_blank"
           rel="noreferrer"
         >
-          @mmaggiex_
+          @maggieex_
         </a>
         )
       </div>
