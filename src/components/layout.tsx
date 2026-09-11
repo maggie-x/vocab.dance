@@ -5,5 +5,5 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps): React.ReactElement => (
-  <div className="mx-10 mb-20 max-w-sm">{children}</div>
+  <div className="w-full max-w-7xl px-6 sm:px-10 mb-20">{children}</div>
 );

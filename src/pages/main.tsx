@@ -8,7 +8,7 @@ import StyleFilter from '../components/style-filter/style-filter';
 import { Move as MoveType, StyleSlug } from '../data/config';
 import { STYLES } from '../data/styles';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 12;
 
 interface MainProps {
   slug: StyleSlug;
@@ -49,7 +49,7 @@ const Main = ({ slug }: MainProps) => {
 
   return (
     <>
-      <div className="flex flex-col space-y-3">
+      <div className="flex flex-col space-y-3 max-w-sm mx-auto">
         <StyleFilter
           activeStyle={slug}
           handleStyleClick={(nextSlug) => navigate(`/${nextSlug}`)}
@@ -60,12 +60,12 @@ const Main = ({ slug }: MainProps) => {
           placeholderText={`Search ${label.toLowerCase()} moves...`}
         />
       </div>
-      <div className="mt-12 flex flex-col space-y-12">
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {paginatedMoves.map((move) => (
           <Move key={move.name} {...move} />
         ))}
         {noMovesFound && (
-          <div className="flex flex-col gap-y-2 px-6 mb-4">
+          <div className="col-span-full flex flex-col gap-y-2 px-6 mb-4 max-w-sm mx-auto">
             <div className="text-center text-zinc-400">
               No moves found for <br /> '{queryText}'.
             </div>

@@ -10,7 +10,7 @@ const Move = ({
   style,
 }: MoveType): React.ReactElement => {
   return (
-    <div className="border rounded-md border-zinc-900 drop-shadow-md bg-zinc-800">
+    <div className="flex flex-col border rounded-md border-zinc-900 drop-shadow-md bg-zinc-800">
       <GIF gifLink={gifLink} />
       <div className="flex flex-col space-y-2 p-6 mt-2">
         <h1 className="text-2xl font-semibold text-zinc-100">{name}</h1>
@@ -20,7 +20,7 @@ const Move = ({
           <p>
             Source:{' '}
             <a
-              className="text-yellow-200"
+              className="text-yellow-200 break-all"
               href={infoSrc}
               target="_blank"
               rel="noreferrer"
