@@ -26,8 +26,8 @@ const MoveRow = ({
           {name}
         </span>
       </Link>
-      <div className="flex items-center gap-3 text-xs text-zinc-400 ml-auto shrink-0">
-        <StyleLabel slug={style} className="text-[10px]" />
+      <SourceCaution infoSrc={infoSrc} />
+      <div className="flex items-center gap-3 text-xs ml-auto shrink-0">
         <a
           className="text-yellow-200 opacity-70"
           href={infoSrc}
@@ -36,7 +36,7 @@ const MoveRow = ({
         >
           Source
         </a>
-        <SourceCaution infoSrc={infoSrc} />
+        <StyleLabel slug={style} className="text-[10px]" />
       </div>
     </li>
   );
