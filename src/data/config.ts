@@ -14,3 +14,12 @@ export interface Move {
 }
 
 export const S3_BUCKET_URI = 'https://s3.ap-southeast-2.amazonaws.com/vocab.dance';
+
+export const moveSlug = (name: string): string =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+export const movePath = (style: StyleSlug, name: string): string =>
+  `/${style}/${moveSlug(name)}`;

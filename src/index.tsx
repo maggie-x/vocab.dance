@@ -11,6 +11,10 @@ const root = ReactDOM.createRoot(
 
 const router = createBrowserRouter([
   {
+    path: '/:style/:move',
+    element: <App />,
+  },
+  {
     path: '/:style',
     element: <App />,
   },

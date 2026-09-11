@@ -7,9 +7,10 @@ import { Layout } from './components/layout';
 import ViewMenu, { ViewMode } from './components/view-menu/view-menu';
 import { DEFAULT_STYLE_SLUG, isStyleSlug, STYLES } from './data';
 import Main from './pages/main';
+import MovePage from './pages/move';
 
 function App() {
-  const { style } = useParams();
+  const { style, move } = useParams();
   const [viewMode = 'cards', setViewMode] = useLocalStorage<ViewMode>(
     'viewMode',
     'cards'
@@ -32,7 +33,11 @@ function App() {
       <ViewMenu viewMode={viewMode} onChange={setViewMode} />
       <Layout>
         <Title />
-        <Main slug={slug} viewMode={viewMode} />
+        {move ? (
+          <MovePage slug={slug} moveSlugParam={move} />
+        ) : (
+          <Main slug={slug} viewMode={viewMode} />
+        )}
         <Feedback />
       </Layout>
     </div>
