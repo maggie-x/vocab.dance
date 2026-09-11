@@ -82,7 +82,7 @@ const Main = ({ slug, viewMode }: MainProps) => {
           onChange={handleSearchChange}
           onSelect={(move) => navigate(movePath(move.style, move.name))}
           results={searchAllMoves(queryText, slug)}
-          placeholderText={`Search ${label.toLowerCase()} moves...`}
+          placeholderText="Search all moves..."
         />
       </div>
 
