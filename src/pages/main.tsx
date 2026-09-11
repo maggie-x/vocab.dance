@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Move from '../components/move';
 import MoveRow from '../components/move/move-row';
-import { SearchBar } from '../components/search-bar';
+import { SearchBar, searchAllMoves } from '../components/search-bar';
 import StyleFilter from '../components/style-filter/style-filter';
 import { ViewMode } from '../components/view-menu/view-menu';
-import { Move as MoveType, StyleSlug } from '../data/config';
+import { Move as MoveType, movePath, StyleSlug } from '../data/config';
 import { STYLES } from '../data/styles';
 
 const PAGE_SIZE = 12;
@@ -80,6 +80,8 @@ const Main = ({ slug, viewMode }: MainProps) => {
         <SearchBar
           searchString={queryText}
           onChange={handleSearchChange}
+          onSelect={(move) => navigate(movePath(move.style, move.name))}
+          results={searchAllMoves(queryText, slug)}
           placeholderText={`Search ${label.toLowerCase()} moves...`}
         />
       </div>
