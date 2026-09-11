@@ -16,22 +16,26 @@ const GIF = ({ gifLink }: { gifLink: string }): React.ReactElement => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          if (!video.src) {
+            video.src = gifLink;
+          }
           video.play().catch(() => undefined);
         } else {
           video.pause();
+          video.removeAttribute('src');
+          video.load();
         }
       },
       { rootMargin: '200px' }
     );
     observer.observe(video);
     return () => observer.disconnect();
-  }, []);
+  }, [gifLink]);
 
   return (
     <video
       ref={videoRef}
       className="w-full aspect-video object-cover rounded-t-md bg-zinc-900"
-      src={gifLink}
       poster={posterFor(gifLink)}
       preload="none"
       loop

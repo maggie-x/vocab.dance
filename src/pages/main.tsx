@@ -1,7 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePagination } from 'react-use-pagination';
-import Button from '../components/button';
 import Move from '../components/move';
 import MoveRow from '../components/move/move-row';
 import { SearchBar } from '../components/search-bar';
@@ -20,34 +18,35 @@ interface MainProps {
 const Main = ({ slug, viewMode }: MainProps) => {
   const navigate = useNavigate();
   const [queryText, setQueryText] = useState<string>('');
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const { label, moves } = STYLES[slug];
 
   const filteredMoves = filterByString(queryText, moves);
-
-  const {
-    startIndex,
-    endIndex,
-    setPage,
-    setPreviousPage,
-    setNextPage,
-    previousEnabled,
-    nextEnabled,
-  } = usePagination({
-    totalItems: filteredMoves.length,
-    initialPageSize: PAGE_SIZE,
-  });
-
-  const paginatedMoves = filteredMoves.slice(startIndex, endIndex + 1);
+  const visibleMoves = filteredMoves.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredMoves.length;
   const noMovesFound = filteredMoves.length === 0;
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((count) => count + PAGE_SIZE);
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, visibleCount]);
 
   const handleSearchChange = (nextQueryText: string) => {
     setQueryText(nextQueryText);
-    setPage(0);
-  };
-
-  const goToPage = (changePage: () => void) => {
-    changePage();
-    window.scrollTo(0, 0);
+    setVisibleCount(PAGE_SIZE);
   };
 
   const noMovesMessage = (
@@ -61,6 +60,14 @@ const Main = ({ slug, viewMode }: MainProps) => {
         modes.
       </div>
     </div>
+  );
+
+  const counter = (shown: number) => (
+    <p className="mt-6 text-center text-sm text-gray-500">
+      <span className="font-semibold text-gray-300">{shown}</span> of{' '}
+      <span className="font-semibold text-gray-300">{filteredMoves.length}</span>{' '}
+      moves
+    </p>
   );
 
   return (
@@ -84,52 +91,18 @@ const Main = ({ slug, viewMode }: MainProps) => {
               <MoveRow key={move.name} {...move} />
             ))}
           </ul>
-          {noMovesFound ? (
-            noMovesMessage
-          ) : (
-            <p className="mt-6 text-center text-sm text-gray-500">
-              <span className="font-semibold text-gray-300">
-                {filteredMoves.length}
-              </span>{' '}
-              moves
-            </p>
-          )}
+          {noMovesFound ? noMovesMessage : counter(filteredMoves.length)}
         </div>
       ) : (
         <>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {paginatedMoves.map((move) => (
+            {visibleMoves.map((move) => (
               <Move key={move.name} {...move} />
             ))}
             {noMovesFound && noMovesMessage}
           </div>
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex mt-6 justify-center">
-              <Button
-                onClick={() => goToPage(setPreviousPage)}
-                ctaText="Previous"
-                disabled={!previousEnabled}
-              />
-              <Button
-                onClick={() => goToPage(setNextPage)}
-                ctaText="Next"
-                disabled={!nextEnabled}
-              />
-            </div>
-            <span className="text-sm text-gray-500">
-              Showing{' '}
-              <span className="font-semibold text-gray-300">
-                {noMovesFound ? 0 : startIndex + 1}
-              </span>
-              -
-              <span className="font-semibold text-gray-300">{endIndex + 1}</span>{' '}
-              of{' '}
-              <span className="font-semibold text-gray-300">
-                {filteredMoves.length}
-              </span>{' '}
-              moves
-            </span>
-          </div>
+          {hasMore && <div ref={sentinelRef} aria-hidden="true" className="h-px" />}
+          {!noMovesFound && counter(visibleMoves.length)}
         </>
       )}
     </>

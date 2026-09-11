@@ -37,7 +37,7 @@ function App() {
         {move ? (
           <MovePage slug={slug} moveSlugParam={move} />
         ) : (
-          <Main slug={slug} viewMode={viewMode} />
+          <Main key={slug} slug={slug} viewMode={viewMode} />
         )}
         <Feedback />
       </Layout>
