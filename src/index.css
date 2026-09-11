@@ -32,11 +32,3 @@ code {
     transform: translateX(200%);
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .shimmer {
-    animation: none;
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateX(100%);
-  }
-}
