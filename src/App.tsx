@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, ScrollRestoration, useParams } from 'react-router-dom';
 import { useLocalStorage, useTitle } from 'react-use';
 import './App.css';
 import Feedback from './components/feedback';
@@ -30,6 +30,7 @@ function App() {
 
   return (
     <div className="flex flex-col items-center font-mono bg-zinc-900 text-white">
+      <ScrollRestoration />
       <ViewMenu viewMode={viewMode} onChange={setViewMode} />
       <Layout>
         <Title />
