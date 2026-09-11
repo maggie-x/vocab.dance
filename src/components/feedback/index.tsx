@@ -25,7 +25,7 @@ const Feedback = () => {
         <Disclaimer />
       </div>
       <div className="text-xs text-zinc-400 text-center">
-        This is very much still a WIP. If you would like to suggest a move,
+        If you would like to suggest a move,
         suggest a feature, or leave constructive feedback, please fill out the
         form below.
       </div>

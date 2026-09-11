@@ -9,7 +9,7 @@ const MoveRow = ({ name, gifLink, infoSrc, style }: MoveType): React.ReactElemen
         src={posterFor(gifLink)}
         alt=""
         loading="lazy"
-        className="w-14 h-14 shrink-0 rounded-md object-cover bg-zinc-900"
+        className="w-24 aspect-video shrink-0 rounded-md object-cover bg-zinc-900"
       />
       <div className="flex flex-col gap-1 min-w-0">
         <span className="font-semibold text-zinc-100">{name}</span>
