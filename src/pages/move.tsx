@@ -1,7 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useTitle } from 'react-use';
-import GIF from '../components/move/gif';
-import StyleLabel from '../components/style';
+import Move from '../components/move';
 import { moveSlug, StyleSlug } from '../data/config';
 import { STYLES } from '../data/styles';
 
@@ -30,27 +29,7 @@ const MovePage = ({ slug, moveSlugParam }: MovePageProps) => {
       >
         ← All {label.toLowerCase()} moves
       </Link>
-      <div className="rounded-md border border-zinc-900 drop-shadow-md bg-zinc-800">
-        <GIF gifLink={move.gifLink} />
-        <div className="flex flex-col space-y-3 p-6">
-          <h1 className="text-3xl font-semibold text-zinc-100">{move.name}</h1>
-          <StyleLabel slug={move.style} />
-          <div className="flex flex-col space-y-2 opacity-70 text-sm">
-            {move.createdBy && <p>Created by: {move.createdBy}</p>}
-            <p>
-              Source:{' '}
-              <a
-                className="text-yellow-200 break-all"
-                href={move.infoSrc}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {move.infoSrc}
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
+      <Move variant="detail" {...move} />
     </div>
   );
 };
