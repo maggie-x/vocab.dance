@@ -1,4 +1,5 @@
-import StyleLabel, { Style } from '../style';
+import { Move as MoveType } from '../../data/config';
+import StyleLabel from '../style';
 import GIF from './gif';
 
 const Move = ({
@@ -7,20 +8,13 @@ const Move = ({
   infoSrc,
   createdBy,
   style,
-}: {
-  name: string;
-  gifLink: string;
-  infoSrc: string;
-  createdBy?: string;
-  style?: Style;
-}): React.ReactElement => {
+}: MoveType): React.ReactElement => {
   return (
     <div className="border rounded-md border-zinc-900 drop-shadow-md bg-zinc-800">
-      {/* <div className="flex flex-col space-y-6"> */}
-      <GIF gifLink={gifLink}></GIF>
+      <GIF gifLink={gifLink} />
       <div className="flex flex-col space-y-2 p-6 mt-2">
         <h1 className="text-2xl font-semibold text-zinc-100">{name}</h1>
-        {style && <StyleLabel style={style} />}
+        <StyleLabel slug={style} />
         <div className="flex flex-col space-y-2 opacity-70 text-sm">
           {createdBy && <p>Created by: {createdBy}</p>}
           <p>
@@ -36,7 +30,6 @@ const Move = ({
           </p>
         </div>
       </div>
-      {/* </div> */}
     </div>
   );
 };

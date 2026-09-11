@@ -1,29 +1,32 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { useTitle } from 'react-use';
 import './App.css';
 import Feedback from './components/feedback';
 import { Title } from './components/gradient-text';
 import { Layout } from './components/layout';
-import { Style } from './components/style';
-import { AFRO_MOVES, HIP_HOP_MOVES, HOUSE_MOVES, Move } from './data';
-import { LITEFEET_MOVES } from './data/litefeet';
+import { DEFAULT_STYLE_SLUG, isStyleSlug, STYLES } from './data';
 import Main from './pages/main';
 
 function App() {
   const { style } = useParams();
-
-  const moves = getMovesFromStyle(style);
-  const styleEnum = getStyleFromURI(style);
+  const isKnownStyle = style === undefined || isStyleSlug(style);
+  const slug = isStyleSlug(style) ? style : DEFAULT_STYLE_SLUG;
 
   useTitle(
-    styleEnum ? `${styleEnum} | Dance Vocab Index` : 'Dance Vocab Index'
+    isStyleSlug(style)
+      ? `${STYLES[slug].label} | Dance Vocab Index`
+      : 'Dance Vocab Index'
   );
+
+  if (!isKnownStyle) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="flex flex-col items-center font-mono bg-zinc-900 text-white">
       <Layout>
         <Title />
-        <Main moves={moves} style={styleEnum} />
+        <Main slug={slug} />
         <Feedback />
       </Layout>
     </div>
@@ -31,33 +34,3 @@ function App() {
 }
 
 export default App;
-
-const getMovesFromStyle = (style: string | undefined): Array<Move> => {
-  switch (style) {
-    case 'hiphop':
-      return HIP_HOP_MOVES.slice().reverse();
-    case 'house':
-      return HOUSE_MOVES;
-    case 'afro':
-      return AFRO_MOVES;
-    case 'litefeet':
-      return LITEFEET_MOVES;
-    default:
-      return HIP_HOP_MOVES.slice().reverse();
-  }
-};
-
-const getStyleFromURI = (style: string | undefined): Style | undefined => {
-  switch (style) {
-    case 'hiphop':
-      return Style.HIP_HOP;
-    case 'house':
-      return Style.HOUSE;
-    case 'afro':
-      return Style.AFRO;
-    case 'litefeet':
-      return Style.LITEFEET;
-    default:
-      return undefined;
-  }
-};
