@@ -1,6 +1,7 @@
 import { Navigate, useParams } from 'react-router-dom';
 import { useLocalStorage, useTitle } from 'react-use';
 import './App.css';
+import Disclaimer from './components/disclaimer';
 import Feedback from './components/feedback';
 import { Title } from './components/gradient-text';
 import { Layout } from './components/layout';
@@ -34,6 +35,7 @@ function App() {
         <Title />
         <Main slug={slug} viewMode={viewMode} />
         <Feedback />
+        <Disclaimer />
       </Layout>
     </div>
   );
