@@ -239,18 +239,28 @@ export function impulseTrain(onsets: Hit[], n: number): Float32Array {
   return out;
 }
 
-const foldTempo = (bpm: number): number => {
+/**
+ * Folds a tempo into exactly one octave, 67.5–135 BPM. A range wider than an octave would hold both a tempo and its
+ * half, and a two-beat kick-snare pattern then reads at half speed (a 127 BPM pop track came out as 63.5).
+ */
+export const foldTempo = (bpm: number): number => {
   let b = bpm;
   while (b > 135) b /= 2;
-  while (b < 62) b *= 2;
+  while (b < 67.5) b *= 2;
   return b;
 };
 
+export interface TempoCandidate {
+  bpm: number;
+  /** Prior-weighted autocorrelation score, comparable between candidates of one track. */
+  score: number;
+}
+
 /**
- * Coarse tempo after Ellis: autocorrelation of the onset train weighted by a log-Gaussian prior centred on 90 BPM,
- * with the half-period lag reinforcing each candidate, folded into 62–135 BPM.
+ * Tempo candidates after Ellis: local maxima of the onset train's autocorrelation weighted by a log-Gaussian prior
+ * centred on 90 BPM, with the half-period lag reinforcing each candidate, folded into one octave and ranked.
  */
-export function coarseTempo(train: Float32Array, fr: number): number {
+export function tempoCandidates(train: Float32Array, fr: number, limit = 6): TempoCandidate[] {
   const n = Math.min(train.length, Math.round(fr * 120));
   const minL = Math.floor((60 / 180) * fr), maxL = Math.ceil((60 / 40) * fr);
   const r = new Float32Array(2 * maxL + 2);
@@ -259,19 +269,50 @@ export function coarseTempo(train: Float32Array, fr: number): number {
     for (let i = 0; i + L < n; i++) s += train[i] * train[i + L];
     r[L] = s / (n - L);
   }
-  let best = -1, bestL = minL;
+  const sc = new Float64Array(maxL + 2);
   for (let L = minL; L <= maxL; L++) {
     const prior = Math.exp(-0.5 * (Math.log2(foldTempo((60 * fr) / L) / 90) / 0.45) ** 2);
-    const sc = (r[L] + 0.5 * (r[2 * L] || 0)) * prior;
-    if (sc > best) { best = sc; bestL = L; }
+    sc[L] = (r[L] + 0.5 * (r[2 * L] || 0)) * prior;
   }
-  return foldTempo((60 * fr) / bestL);
+  const out: TempoCandidate[] = [];
+  for (let L = minL; L <= maxL; L++) {
+    if (sc[L] <= 0 || sc[L] < sc[L - 1] || sc[L] < sc[L + 1]) continue;
+    const bpm = foldTempo((60 * fr) / L);
+    const near = out.find((c) => Math.abs(Math.log2(c.bpm / bpm)) < 0.02);
+    if (near) { if (sc[L] > near.score) { near.bpm = bpm; near.score = sc[L]; } }
+    else out.push({ bpm, score: sc[L] });
+  }
+  if (!out.length) out.push({ bpm: 90, score: 0 });
+  return out.sort((a, b) => b.score - a.score).slice(0, limit);
+}
+
+/** The strongest tempo candidate by autocorrelation alone. */
+export function coarseTempo(train: Float32Array, fr: number): number {
+  return tempoCandidates(train, fr)[0].bpm;
+}
+
+/**
+ * Picks the tempo whose 16th grid actually explains the hits: each candidate's autocorrelation score is weighted by
+ * the grid coherence of all onsets at that tempo. Autocorrelation alone favours the strongest repeat, which for a
+ * kick-on-1, snare-on-2 pattern can be one and a half beats; such a grid leaves most hits between its cells.
+ */
+export function pickTempo(train: Float32Array, fr: number, onsets: DrumOnsets): number {
+  const all = [...onsets.kick, ...onsets.snare, ...onsets.hat];
+  let best = -1, bpm = 90;
+  for (const c of tempoCandidates(train, fr)) {
+    const g = fitGrid(all, c.bpm, 0.04);
+    const sc = c.score * g.coh;
+    if (sc > best) { best = sc; bpm = c.bpm; }
+  }
+  return bpm;
 }
 
 export interface GridFit {
   bpm: number;
   step: number;
   phaseStep: number;
+  /** How much of the onset strength the grid explains, 0 (hits spread evenly between cells) to 1 (all on the grid). */
+  coh: number;
 }
 
 /**
@@ -299,7 +340,8 @@ export function fitGrid(onsets: Hit[], bpm0: number, span: number): GridFit {
   search(c - w / 60, c + w / 60, w / 3000);
   const b = best as unknown as ReturnType<typeof score>;
   const phaseStep = ((((b.ang / (2 * Math.PI)) * b.step) % b.step) + b.step) % b.step;
-  return { bpm: bestBpm, step: b.step, phaseStep };
+  const total = onsets.reduce((acc, o) => acc + o.s, 0);
+  return { bpm: bestBpm, step: b.step, phaseStep, coh: total ? b.mag / total : 0 };
 }
 
 /** Which 16th is beat 1: kicks favour 1 and 3, snares favour 2 and 4, and the kick on 1 tends to be the strongest. */
@@ -377,7 +419,7 @@ export async function analyseAudio(
   const onsets = classifyEvents(buildEvents(features, sr));
   const n = features.frames;
   const comb = impulseTrain(onsets.kick, n).map((v, i) => v + impulseTrain(onsets.snare, n)[i]);
-  const coarse = coarseTempo(comb, sr / HOP);
+  const coarse = pickTempo(comb, sr / HOP, onsets);
   const base: TrackAnalysis = { bpm: coarse, beatLen: 60 / coarse, phase: 0, bars: [], onsets, duration };
   return fitTempo(base, coarse, 0.04);
 }

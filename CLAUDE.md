@@ -106,11 +106,20 @@ when changing anything.
   Quieter snares are ghosts.
 - **Hat**: top-band rise at least 0.25 and fallen by 40 ms. Vocal sibilance
   lands in the hat band and sustains; open hats lose out to this rule.
-- **Tempo**: coarse by autocorrelation of the kick-plus-snare onset train with
-  a log-Gaussian prior around 90 BPM and half-period reinforcement, folded into
-  62–135; fine by treating the 16th grid as a phase wheel and finding the tempo
-  where all onsets add up most coherently, to a hundredth of a BPM. The mean
-  angle is the grid phase.
+- **Tempo**: candidates are the local maxima of the autocorrelation of the
+  kick-plus-snare onset train, weighted by a log-Gaussian prior around 90 BPM
+  with half-period reinforcement, folded into exactly one octave, 67.5–135.
+  Each candidate's 16th grid is then fitted to all onsets (phase wheel) and the
+  candidate with the highest autocorrelation score times grid coherence wins.
+  The fine fit finds the tempo to a hundredth of a BPM; the mean angle is the
+  grid phase. Two lessons from a 127 BPM pop track that read as 83: a fold
+  range wider than an octave holds a tempo and its half, so a kick-on-1,
+  snare-on-3 pattern (period two beats) came out at 63.5 and was never
+  doubled; and autocorrelation alone picked the one-and-a-half-beat repeat
+  (84.6), whose grid left most hits between cells. Coherence rejects that
+  outright (0.07 against 0.75 at the true tempo). Coherence on its own is
+  biased towards faster tempos, so it only ranks candidates the
+  autocorrelation already found.
 - **Downbeat**: kicks favour beats 1 and 3, snares 2 and 4, kick 1 slightly
   stronger. Identical kicks on 1 and 3 make this a coin toss, hence the
   "Beat 1 is off?" buttons that shift the bar start by a beat.

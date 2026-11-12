@@ -1,4 +1,4 @@
-import { buildBars, chooseBarStart, classifyEvents, coarseTempo, detectBar, DrumEvent, DrumOnsets, firstBarWithDrums, fitGrid, Hit, impulseTrain, pickPeaks, TrackAnalysis } from './analysis';
+import { buildBars, chooseBarStart, classifyEvents, coarseTempo, detectBar, foldTempo, pickTempo, tempoCandidates, DrumEvent, DrumOnsets, firstBarWithDrums, fitGrid, Hit, impulseTrain, pickPeaks, TrackAnalysis } from './analysis';
 import { HOP } from './dsp';
 import { busiestBar } from './analysis';
 
@@ -31,8 +31,51 @@ describe('coarseTempo', () => {
     const n = Math.round(o.hat[o.hat.length - 1].t * FR) + 10;
     const comb = impulseTrain(o.kick, n).map((v, i) => v + impulseTrain(o.snare, n)[i]);
     const bpm = coarseTempo(comb, FR);
-    expect(bpm).toBeGreaterThanOrEqual(62);
+    expect(bpm).toBeGreaterThanOrEqual(67.5);
     expect(bpm).toBeLessThanOrEqual(135);
+  });
+  it('folds into exactly one octave so a tempo and its half cannot both appear', () => {
+    expect(foldTempo(63.5)).toBeCloseTo(127, 5);
+    expect(foldTempo(254)).toBeCloseTo(127, 5);
+    expect(foldTempo(67.5)).toBe(67.5);
+    expect(foldTempo(135)).toBe(135);
+  });
+  it('ranks several candidates with the strongest first', () => {
+    const o = backbeat(93, 24);
+    const n = Math.round(o.hat[o.hat.length - 1].t * FR) + 10;
+    const comb = impulseTrain(o.kick, n).map((v, i) => v + impulseTrain(o.snare, n)[i]);
+    const cands = tempoCandidates(comb, FR);
+    expect(cands.length).toBeGreaterThan(1);
+    expect(cands[0].bpm).toBeCloseTo(93, 0);
+    for (let i = 1; i < cands.length; i++) expect(cands[i].score).toBeLessThanOrEqual(cands[i - 1].score);
+  });
+});
+
+describe('pickTempo', () => {
+  /** Kick on 1 only, snare on 3 only, hats on 8ths: the kick-snare train repeats every two beats. */
+  function twoBeatPattern(bpm: number, bars: number): DrumOnsets {
+    const beat = 60 / bpm;
+    const hit = (t: number, s: number): Hit => ({ i: Math.round((t * SR) / HOP), t, s });
+    const kick: Hit[] = [], snare: Hit[] = [], hat: Hit[] = [];
+    for (let b = 0; b < bars; b++) {
+      const t0 = 0.3 + b * 4 * beat;
+      kick.push(hit(t0, 1));
+      snare.push(hit(t0 + 2 * beat, 0.8));
+      for (let e = 0; e < 8; e++) hat.push(hit(t0 + (e * beat) / 2, 0.4));
+    }
+    return { kick, snare, ghost: [], hat };
+  }
+  it('reads a two-beat pattern at the beat tempo, not its half', () => {
+    const o = twoBeatPattern(127, 24);
+    const n = Math.round(o.hat[o.hat.length - 1].t * FR) + 10;
+    const comb = impulseTrain(o.kick, n).map((v, i) => v + impulseTrain(o.snare, n)[i]);
+    expect(pickTempo(comb, FR, o)).toBeCloseTo(127, 0);
+  });
+  it('still finds the tempo of a plain backbeat', () => {
+    const o = backbeat(93, 24);
+    const n = Math.round(o.hat[o.hat.length - 1].t * FR) + 10;
+    const comb = impulseTrain(o.kick, n).map((v, i) => v + impulseTrain(o.snare, n)[i]);
+    expect(pickTempo(comb, FR, o)).toBeCloseTo(93, 0);
   });
 });
 
