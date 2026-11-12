@@ -22,7 +22,7 @@ const Grid = ({ lab }: { lab: RhythmLab }) => {
   const per = RES[state.res].steps, spb = stepsPerBar(state.res), total = spb * state.bars;
   // Columns shrink to fit the container, so the whole pattern is always in view, and never grow past 34px.
   const track = 'minmax(0, 34px)';
-  const columns = state.bars === 2 ? `auto repeat(${spb}, ${track}) 10px repeat(${spb}, ${track})` : `auto repeat(${total}, ${track})`;
+  const columns = state.bars === 2 ? `max-content repeat(${spb}, ${track}) 10px repeat(${spb}, ${track})` : `max-content repeat(${total}, ${track})`;
   const style = { gridTemplateColumns: columns } as CSSProperties;
 
   return (
