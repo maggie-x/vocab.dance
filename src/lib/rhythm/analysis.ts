@@ -19,6 +19,8 @@ export interface DrumEvent {
   cs: number;
   /** Top-band sustain 40 ms after the onset. */
   ts: number;
+  /** Time the low-band energy starts rising, the kick's attack. */
+  lowStart?: number;
   snareLike: boolean;
 }
 
@@ -99,7 +101,8 @@ export function pickPeaks(odf: Float32Array, amp: Float32Array, sr: number, opts
     const sus = Math.max(0, Math.min(1, (amp[Math.min(n - 1, i + later)] - before) / s));
     const y0 = odf[i - 1], y1 = odf[i], y2 = odf[i + 1], den = y0 - 2 * y1 + y2;
     const frac = den ? Math.max(-0.5, Math.min(0.5, (0.5 * (y0 - y2)) / den)) : 0;
-    const t = ((i + frac) * HOP + FFT_N - HOP) / sr;
+    // The flux peaks when the attack sits near the middle of the analysis window.
+    const t = ((i + frac) * HOP + FFT_N / 2) / sr;
     cands.push({ i, t, s, sus });
     lastI = i;
   }
@@ -150,10 +153,27 @@ export function buildEvents(features: BandFeatures, sr: number): DrumEvent[] {
     const before = Math.min(a[Math.max(0, i - 3)], a[Math.max(0, i - 2)], a[Math.max(0, i - 1)]);
     return rise > 0 ? Math.max(0, Math.min(1, (a[Math.min(a.length - 1, i + later)] - before) / rise)) : 0;
   };
+  // A kick's low band fills in over 10 to 15 ms, so its flux peak runs late. Its attack is where the low-band
+  // amplitude has risen a fifth of the way from the level before to the peak after, read to a fraction of a frame.
+  const lowStart = (i: number): number => {
+    const a = amp[0];
+    const before = Math.min(a[Math.max(0, i - 6)], a[Math.max(0, i - 5)], a[Math.max(0, i - 4)], a[Math.max(0, i - 3)]);
+    let peak = 0;
+    for (let j = i; j <= Math.min(a.length - 1, i + 6); j++) if (a[j] > peak) peak = a[j];
+    const thr = before + 0.2 * (peak - before);
+    for (let j = Math.max(1, i - 6); j <= Math.min(a.length - 1, i + 6); j++) {
+      if (a[j] >= thr) {
+        const f = a[j] > a[j - 1] ? (thr - a[j - 1]) / (a[j] - a[j - 1]) : 0;
+        return ((j - 1 + f) * HOP + FFT_N / 2 + HOP) / sr;
+      }
+    }
+    return (i * HOP + FFT_N / 2) / sr;
+  };
   for (const ev of events) {
     ev.r = amp.map((a) => riseAt(a, ev.i, span));
     ev.cs = sustainAt(amp[2], ev.i, ev.r[2]);
     ev.ts = sustainAt(amp[3], ev.i, ev.r[3]);
+    if (ev.low) ev.lowStart = lowStart(ev.low.i);
   }
   const norms = amp.map((_, b) => pct95(events.map((e) => e.r[b])));
   for (const ev of events) ev.n = ev.r.map((r, b) => r / norms[b]);
@@ -188,7 +208,7 @@ export function classifyEvents(events: DrumEvent[]): DrumOnsets {
   for (const ev of events) {
     const [low, body, crack, hat] = ev.n;
     const hasAttack = body >= 0.08 || crack >= 0.08;
-    if (ev.low && low >= 0.3 && ev.low.sus < 0.85 && hasAttack) out.kick.push({ i: ev.i, t: ev.low.t, s: low });
+    if (ev.low && low >= 0.3 && ev.low.sus < 0.85 && hasAttack) out.kick.push({ i: ev.i, t: ev.lowStart ?? ev.low.t, s: low });
     const snareOnset = ev.mid ?? ev.hat;
     if (ev.snareLike && snareOnset) (crack >= 0.4 ? out.snare : out.ghost).push({ i: ev.i, t: snareOnset.t, s: crack });
     if (ev.hat && hat >= 0.25 && ev.ts <= 0.85) out.hat.push({ i: ev.i, t: ev.hat.t, s: Math.min(1, hat) });

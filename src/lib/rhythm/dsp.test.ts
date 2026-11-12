@@ -24,8 +24,8 @@ describe('bandFeatures', () => {
     }
     const { odf, frames } = bandFeatures(data, sr);
     const peakFrame = (arr: Float32Array) => { let b = 0; for (let i = 0; i < frames; i++) if (arr[i] > arr[b]) b = i; return b; };
-    const frameTime = (f: number) => (f * 256 + 2048 - 256) / sr;
-    expect(Math.abs(frameTime(peakFrame(odf[0])) - kickAt)).toBeLessThan(0.03);
-    expect(Math.abs(frameTime(peakFrame(odf[3])) - hatAt)).toBeLessThan(0.03);
+    const frameTime = (f: number) => (f * 256 + 1024) / sr;
+    expect(Math.abs(frameTime(peakFrame(odf[0])) - kickAt)).toBeLessThan(0.02);
+    expect(Math.abs(frameTime(peakFrame(odf[3])) - hatAt)).toBeLessThan(0.012);
   });
 });

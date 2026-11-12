@@ -163,8 +163,17 @@ generated. Remove the WAV afterwards.
   folder and run them from a Node script over the PCM. Print per-event band
   shapes, sustains and the per-step histograms; that is how the rules above
   were found.
-- Timing readouts are relative to a grid fitted to the onsets themselves, so a
-  constant detection latency cancels; only differences between instruments
-  are meaningful. Resolution is about 5 ms (hop 256 at 48 kHz).
+- Onset times must be absolutely right, not just consistent, because the
+  grid's bar boundaries come from them and the track is played against the
+  grid. The flux peak sits when the attack is near the middle of the 2048
+  window, so a frame's time is `frame * hop + N/2`; the earlier end-of-window
+  formula ran about 15 ms late and made the synth drums lag the record. The
+  low band fills in 10 to 15 ms after a kick's click, so a kick is timed
+  where its low-band amplitude has risen a fifth of the way to its peak, not
+  at the flux peak. Do not borrow another band's onset time for a kick: a
+  hat on the grid under a late kick sits in the same event and would erase
+  the kick's lateness. Check absolute timing against the generated loops,
+  where every hit's true time is known. Resolution is about 5 ms (hop 256
+  at 48 kHz).
 - Sound only starts after a click, so the AudioContext is created lazily in
   `Engine.ensureAudio`.
