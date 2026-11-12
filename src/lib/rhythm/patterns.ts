@@ -63,6 +63,27 @@ export const PRESETS: Preset[] = [
   { id: 'ghost', name: 'Ghost snare', kick: '1,3', snare: '2,4', ghost: '2&', purpose: 'A quiet snare on the "&" after 2. Hear the contrast between the accent and the ghost.' },
 ];
 
+// Kick and snare placement studies. Every pattern is one bar of 16ths with the
+// snare on 2 and 4 unless the name says otherwise. Names are the kick counts.
+export const STUDIES: Preset[] = [
+  { id: 'k-1-3and', name: 'Kick 1 · 3&', kick: '1,3&', snare: '2,4', purpose: 'Second kick waits until the "&" before 4. Long gap after the 1, then a push into the last snare.' },
+  { id: 'k-1-1a-3', name: 'Kick 1 · 1a · 3', kick: '1,1a,3', snare: '2,4', purpose: 'A late pickup on the "a" right before the snare on 2. The kick leans into the backbeat.' },
+  { id: 'k-1-1e-3-3e', name: 'Kick 1 · 1e · 3 · 3e', kick: '1,1e,3,3e', snare: '2,4', purpose: 'Each kick has a quick echo one 16th later. Tight double on every downbeat.' },
+  { id: 'k-1-2a-3and', name: 'Kick 1 · 2a · 3&', kick: '1,2a,3&', snare: '2,4', purpose: 'Both later kicks sit off the beat, one on an "a" and one on an "&". Nothing lands on 3.' },
+  { id: 'k-1-1and-2-2and-4', name: 'Kick 1 · 1& · 2 · 2& · 4', kick: '1,1&,2,2&,4', snare: '2,4', purpose: 'Busy first half, empty second half. Kick and snare share beat 2 and 4.' },
+  { id: 'k-2e-2and-2a-4', name: 'Kick 2e · 2& · 2a · 4', kick: '2e,2&,2a,4', snare: '2,4', purpose: 'No kick on 1. Three 16ths pour out after the first snare, then a kick under the last one.' },
+  { id: 'k-1-1and-3a', name: 'Kick 1 · 1& · 3a', kick: '1,1&,3a', snare: '2,4', purpose: 'An eighth-note double at the top, then a lone late kick on the "a" before 4.' },
+  { id: 'k-1-2and-3-4a', name: 'Kick 1 · 2& · 3 · 4a', kick: '1,2&,3,4a', snare: '2,4', purpose: 'The last kick on "4a" anticipates the next bar. Feels like it pulls the loop forward.' },
+  { id: 'k-1-3e-3and', name: 'Kick 1 · 3e · 3&', kick: '1,3e,3&', snare: '2,4', purpose: 'Nothing on 3 itself. The kick arrives one 16th late and doubles up.' },
+  { id: 'k-1a-2and-4a', name: 'Kick 1a · 2& · 4a', kick: '1a,2&,4a', snare: '2,4', purpose: 'Every kick is off the beat, including the downbeat. Only the snare holds the pulse.' },
+  { id: 'k-1-1e-1and-1a-3', name: 'Kick 1 · 1e · 1& · 1a · 3', kick: '1,1e,1&,1a,3', snare: '2,4', purpose: 'A four-16th roll fills beat 1 and stops dead at the snare.' },
+  { id: 'k-1-2a-3-3a', name: 'Kick 1 · 2a · 3 · 3a', kick: '1,2a,3,3a', snare: '2,4', purpose: 'Kicks on the "a" before and after beat 3 wrap around the downbeat.' },
+  { id: 'k-1-1a-2and-3-4e', name: 'Kick 1 · 1a · 2& · 3 · 4e', kick: '1,1a,2&,3,4e', snare: '2,4', purpose: 'Uses every subdivision once: a beat, an "a", an "&", a beat, an "e".' },
+  { id: 's-1-3-pushed', name: 'Snare pushed to 2e · 4e', kick: '1,3', snare: '2e,4e', purpose: 'The snare sits one 16th behind the backbeat. A new cell, not a timing offset.' },
+  { id: 's-2-4-4a', name: 'Snare 2 · 4 · 4a', kick: '1,3', snare: '2,4,4a', purpose: 'A second snare right after 4 fills the gap into the next bar.' },
+  { id: 's-1and-3and', name: 'Snare 1& · 3&', kick: '1,3', snare: '1&,3&', purpose: 'Snare on the "&" of 1 and 3 instead of 2 and 4. Half-time feel over the same kicks.' },
+];
+
 export const VARIANTS: Variant[] = [
   { base: 'boom', name: 'Boom bap, 16th hats', hat: HAT16, purpose: 'Same backbeat with hats on every 16th. The straight version to compare swing against.' },
   { base: 'boom', name: 'Boom bap, 16th hats swung', hat: HAT16, swing: 66, purpose: 'The "e" and "a" hats land late. Nothing changes cell, only the spacing.' },
@@ -161,7 +182,7 @@ export function resizeNudges(n: Nudges, res: Res, bars: number): Nudges {
 
 export function configFrom(ref: PatternRef): PatternConfig {
   const baseId = typeof ref === 'string' ? ref : ref.base;
-  const base = PRESETS.find((p) => p.id === baseId);
+  const base = PRESETS.find((p) => p.id === baseId) ?? STUDIES.find((p) => p.id === baseId);
   if (!base) throw new Error(`Unknown preset ${baseId}`);
   const over: Variant = typeof ref === 'string' ? { base: baseId } : ref;
   const strings = {

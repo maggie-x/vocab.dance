@@ -1,4 +1,4 @@
-import { configFrom, describeConfig, hitsFrom, remapRows, resizeBars, stepLabel } from './patterns';
+import { configFrom, describeConfig, hitsFrom, PRESETS, remapRows, resizeBars, stepLabel, STUDIES } from './patterns';
 
 describe('hitsFrom', () => {
   it('parses beats and 16th subdivisions', () => {
@@ -69,5 +69,32 @@ describe('labels and descriptions', () => {
   it('describes placements, swing and timing', () => {
     const cfg = configFrom({ base: 'boom', swing: 66, offsets: { kick: 22 } });
     expect(describeConfig(cfg)).toEqual(['K 1,3', 'S 2,4', 'swing 66%', 'kick 22 ms late']);
+  });
+});
+
+describe('STUDIES', () => {
+  it('have unique ids and names that do not clash with the presets', () => {
+    const ids = [...PRESETS, ...STUDIES].map((p) => p.id);
+    const names = [...PRESETS, ...STUDIES].map((p) => p.name);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('all resolve to one bar of 16ths with every kick on the grid', () => {
+    for (const study of STUDIES) {
+      const cfg = configFrom(study.id);
+      expect(cfg.bars).toBe(1);
+      expect(cfg.res).toBe('16');
+      const kicks = hitsFrom(study.kick, '16');
+      expect(kicks.every((i) => i >= 0 && i < 16)).toBe(true);
+      expect(kicks.filter((i) => cfg.rows.kick[i]).length).toBe(kicks.length);
+    }
+  });
+
+  it('kick studies are named after their kick counts', () => {
+    for (const study of STUDIES.filter((s) => s.id.startsWith('k-'))) {
+      const described = describeConfig(configFrom(study.id))[0];
+      expect(study.name).toBe(`Kick ${described.slice(2).split(',').join(' · ')}`);
+    }
   });
 });

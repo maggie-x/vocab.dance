@@ -1,10 +1,12 @@
 import rhythms from '../../data/rhythms.json';
 import { RhythmLab } from '../../hooks/use-rhythm-lab';
-import { configFrom, describeConfig, PatternConfig, PRESETS, RES, VARIANTS } from '../../lib/rhythm/patterns';
+import { configFrom, describeConfig, PatternConfig, PRESETS, RES, STUDIES, VARIANTS } from '../../lib/rhythm/patterns';
 import { SavedRhythm, savedToConfig } from '../../lib/rhythm/saved';
 import { GrooveCard, Group } from './groove-card';
 
-const LIBRARY: PatternConfig[] = [...PRESETS.map((p) => configFrom(p.id)), ...VARIANTS.map((v) => configFrom(v))];
+const BASICS: PatternConfig[] = PRESETS.map((p) => configFrom(p.id));
+const PLACEMENT: PatternConfig[] = STUDIES.map((p) => configFrom(p.id));
+const FEEL: PatternConfig[] = VARIANTS.map((v) => configFrom(v));
 const FROM_SONGS = rhythms as SavedRhythm[];
 
 const rhythmMeta = (r: SavedRhythm) => {
@@ -15,6 +17,9 @@ const rhythmMeta = (r: SavedRhythm) => {
 
 const RhythmsTab = ({ lab }: { lab: RhythmLab }) => {
   const { state, loadAndPlay, loadSavedRhythm } = lab;
+  const card = (cfg: PatternConfig) => (
+    <GrooveCard key={cfg.name} name={cfg.name} meta={describeConfig(cfg)} purpose={cfg.purpose} active={state.name === cfg.name} onClick={() => loadAndPlay(cfg)} />
+  );
   return (
     <section className="grid gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -40,10 +45,12 @@ const RhythmsTab = ({ lab }: { lab: RhythmLab }) => {
             onClick={() => loadSavedRhythm(r)}
           />
         ))}
-        <Group label="Generated · illustrative, not transcriptions" />
-        {LIBRARY.map((cfg) => (
-          <GrooveCard key={cfg.name} name={cfg.name} meta={describeConfig(cfg)} purpose={cfg.purpose} active={state.name === cfg.name} onClick={() => loadAndPlay(cfg)} />
-        ))}
+        <Group label="Generated · basics" />
+        {BASICS.map(card)}
+        <Group label="Generated · kick and snare placement" />
+        {PLACEMENT.map(card)}
+        <Group label="Generated · timing and feel" />
+        {FEEL.map(card)}
       </div>
     </section>
   );
