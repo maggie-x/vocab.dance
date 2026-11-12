@@ -59,11 +59,23 @@ describe('detectBar', () => {
     expect(det.offsets.kick).toBe(20);
     expect(det.offsets.snare).toBe(-20);
     expect(det.swing).toBe(50);
+    expect(det.offGrid).toBe(0);
+  });
+  it('leaves hits between 16ths, such as triplet hats, out of the grid and counts them', () => {
+    const bpm = 90, beat = 60 / bpm, start = 0.5;
+    const o = backbeat(bpm, 2, start);
+    const hit = (t: number): Hit => ({ i: Math.round((t * SR) / HOP), t, s: 0.5 });
+    const bar2 = start + 4 * beat;
+    o.hat = [hit(bar2), hit(bar2 + beat / 3), hit(bar2 + (2 * beat) / 3), hit(bar2 + beat)];
+    const a: TrackAnalysis = { bpm, beatLen: beat, phase: start, bars: buildBars(start, beat, 20), onsets: o, duration: 20 };
+    const det = detectBar(a, 1);
+    expect(det.rows.hat.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 4]);
+    expect(det.offGrid).toBe(2);
   });
 });
 
 describe('classifyEvents', () => {
-  const ev = (partial: Partial<DrumEvent> & { n: number[] }): DrumEvent => ({ i: 0, r: [], cs: 0, snareLike: false, ...partial });
+  const ev = (partial: Partial<DrumEvent> & { n: number[] }): DrumEvent => ({ i: 0, r: [], cs: 0, ts: 0, snareLike: false, ...partial });
   const onset = (t: number, sus = 0) => ({ i: Math.round((t * SR) / HOP), t, s: 1, sus });
 
   it('keeps a kick with a punchy low rise and some attack', () => {
@@ -82,9 +94,14 @@ describe('classifyEvents', () => {
     expect(out.snare).toHaveLength(1);
     expect(out.ghost).toHaveLength(1);
   });
-  it('counts a bright event as a hat', () => {
-    const out = classifyEvents([ev({ hat: onset(1), n: [0, 0.02, 0.1, 0.6] })]);
+  it('counts a bright event as a hat unless it sustains like sibilance', () => {
+    const out = classifyEvents([ev({ hat: onset(1), n: [0, 0.02, 0.1, 0.6], ts: 0.1 })]);
     expect(out.hat).toHaveLength(1);
-    expect(classifyEvents([ev({ hat: onset(1), n: [0, 0.02, 0.1, 0.1] })]).hat).toHaveLength(0);
+    expect(classifyEvents([ev({ hat: onset(1), n: [0, 0.02, 0.1, 0.1], ts: 0.1 })]).hat).toHaveLength(0);
+    expect(classifyEvents([ev({ hat: onset(1), n: [0, 0.1, 0.15, 0.4], ts: 0.95 })]).hat).toHaveLength(0);
+  });
+  it('takes a body-less snare from the top-band detector when the crack is strong', () => {
+    const out = classifyEvents([ev({ hat: onset(1), snareLike: true, n: [0, 0.03, 0.9, 1.0], cs: 0.5 })]);
+    expect(out.snare).toHaveLength(1);
   });
 });

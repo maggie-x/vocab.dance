@@ -50,6 +50,7 @@ export interface TrackState {
   analysis: TrackAnalysis;
   barIndex: number;
   hits: Record<Inst, BarHit[]> | null;
+  offGrid: number;
   play: boolean;
   mode: TrackMode;
 }
@@ -139,6 +140,22 @@ export function useRhythmLab() {
   const stop = useCallback(() => engine.stop(), [engine]);
   const togglePlay = useCallback(() => (engine.playing ? engine.pause() : engine.start()), [engine]);
 
+  // Writes that the engine must see before the next render also update the ref directly.
+  const updateTrack = useCallback((patch: Partial<TrackState>) => {
+    const t = trackRef.current;
+    if (!t) return;
+    const next = { ...t, ...patch };
+    trackRef.current = next;
+    setTrack(next);
+  }, []);
+
+  /** Make the grid audible on its own: every row on, the track (if any) silent but still loaded. */
+  const soloGrid = useCallback(() => {
+    setState((s) => ({ ...s, mute: { ...HEAR_SETS.all } }));
+    const t = trackRef.current;
+    if (t && t.play) { updateTrack({ play: false }); engine.stopTrackSources(); }
+  }, [engine, updateTrack]);
+
   const loadConfig = useCallback((cfg: PatternConfig, opts: { toast?: boolean; keepMystery?: boolean } = {}) => {
     engine.resetPosition();
     setState((s) => ({
@@ -156,9 +173,10 @@ export function useRhythmLab() {
   }, [engine, showToast]);
 
   const loadAndPlay = useCallback((cfg: PatternConfig, opts: { toast?: boolean } = {}) => {
+    soloGrid();
     loadConfig(cfg, opts);
     if (!engine.playing) engine.start();
-  }, [engine, loadConfig]);
+  }, [engine, loadConfig, soloGrid]);
 
   const setBpm = useCallback((bpm: number) => { setState((s) => ({ ...s, bpm })); window.setTimeout(() => engine.setTrackRate(), 0); }, [engine]);
   const setSwing = useCallback((swing: number) => setState((s) => ({ ...s, swing })), []);
@@ -225,11 +243,11 @@ export function useRhythmLab() {
     const current = stateRef.current.mystery;
     const choices = PRESETS.filter((p) => p.id !== current);
     const pick = choices[Math.floor(Math.random() * choices.length)];
-    setState((s) => ({ ...s, mute: { ...HEAR_SETS.all } }));
+    soloGrid();
     loadConfig(configFrom(pick.id), { toast: false, keepMystery: true });
     setState((s) => ({ ...s, mystery: pick.id, name: 'Mystery pattern' }));
     if (!engine.playing) engine.start();
-  }, [engine, loadConfig]);
+  }, [engine, loadConfig, soloGrid]);
 
   const answerMystery = useCallback((id: string): { correct: boolean; answer: string } | null => {
     const current = stateRef.current.mystery;
@@ -249,7 +267,7 @@ export function useRhythmLab() {
       res: '16', bars: 1, rows: det.rows, swing: det.swing, offsets: det.offsets,
     }, { toast: false });
     setTrackStatus(`${t.name}: ${t.analysis.bpm} BPM detected. Grid shows what was heard in bar ${barIndex + 1}.`);
-    return { ...t, barIndex, hits: det.hits };
+    return { ...t, barIndex, hits: det.hits, offGrid: det.offGrid };
   }, [loadConfig]);
 
   const loadFile = useCallback(async (file: File) => {
@@ -269,18 +287,9 @@ export function useRhythmLab() {
       analysis = await analyseAudio(mono, buffer.sampleRate, buffer.duration, runFeatures, (f) => setTrackStatus(`Listening for drums… ${Math.round(f * 100)}%`));
     } catch { setTrackStatus('Analysis failed in this browser.'); return; }
     const name = file.name.replace(/\.[^.]+$/, '');
-    const base: TrackState = { name, buffer, analysis, barIndex: 0, hits: null, play: true, mode: 'loop' };
+    const base: TrackState = { name, buffer, analysis, barIndex: 0, hits: null, offGrid: 0, play: true, mode: 'loop' };
     setTrack(applyDetection(base, busiestBar(analysis)));
   }, [engine, applyDetection]);
-
-  // Writes that the engine must see before the next render also update the ref directly.
-  const updateTrack = useCallback((patch: Partial<TrackState>) => {
-    const t = trackRef.current;
-    if (!t) return;
-    const next = { ...t, ...patch };
-    trackRef.current = next;
-    setTrack(next);
-  }, []);
 
   const setBarIndex = useCallback((idx: number) => {
     const t = trackRef.current;

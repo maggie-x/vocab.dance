@@ -113,6 +113,9 @@ array and fill in `source`. Loading a saved rhythm also sets the tempo.
   The engine reads state through refs, so anything the engine must see before
   the next render (track mode, bar index, hear mode) also writes the ref
   directly via `updateTrack`. Loading a pattern resets the paused position.
+  Loading a groove from any card (`loadAndPlay`) first calls `soloGrid`: all
+  rows on, the track silent but still loaded. Otherwise a groove chosen while
+  in "Track only" plays into muted rows and seems not to load.
 - `src/pages/rhythm.tsx` composes transport, grid, tab bar and the four tabs.
   `src/rhythm-app.tsx` is the page shell with the site menu.
 - One component per section under `src/components/rhythm`. The grid's cell
@@ -140,6 +143,21 @@ generated. Remove the WAV afterwards.
   that is why a kick requires attack energy above 150 Hz.
 - A kick's click can out-rise a snare in the 150 to 800 Hz band, so never
   judge a snare by that band alone.
+- Trap-style snares and claps have almost no body. A snare is accepted with
+  body under a quiet crack, or without body when the crack is loud, and it
+  may only have tripped the top-band detector. Vocals and keys are told
+  apart by crack sustain (they hold at full level 40 ms on) and by being
+  dull in the top band.
+- Vocal sibilance lands in the hat band and sustains; hats must have fallen
+  by 40 ms. Open hats lose out to this rule.
+- Triplet hats sit a third of a step off the 16th grid. `detectBar` leaves
+  hits more than 0.3 step from a 16th out of the grid and reports the count,
+  rather than snapping them to the wrong cell.
+- To debug detection on a real file, decode it with ffmpeg to mono 48 kHz
+  s16le, compile the pure modules with `tsc --module commonjs` into a scratch
+  folder and run them from a Node script over the PCM. Print per-event band
+  shapes, sustains and the per-step histograms; that is how the rules above
+  were found.
 - Timing readouts are relative to a grid fitted to the onsets themselves, so a
   constant detection latency cancels; only differences between instruments
   are meaningful. Resolution is about 5 ms (hop 256 at 48 kHz).

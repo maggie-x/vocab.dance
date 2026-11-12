@@ -94,7 +94,7 @@ const TrackTab = ({ lab }: { lab: RhythmLab }) => {
               Play through runs the track from the chosen bar to the end while your grid pattern loops alongside it. Edit cells until the grid matches what you hear. Moving bars keeps your pattern; "Detect this bar" replaces it with a fresh guess. Use Hear to listen to the track alone, your grid drums alone, or both together.
             </p>
             <TrackCanvas track={track} onPick={setBarIndex} />
-            {track.hits && <HitList hits={track.hits} />}
+            {track.hits && <HitList hits={track.hits} offGrid={track.offGrid} />}
           </>
         )}
       </div>
@@ -102,7 +102,7 @@ const TrackTab = ({ lab }: { lab: RhythmLab }) => {
   );
 };
 
-const HitList = ({ hits }: { hits: Record<Inst, { step: number; dev: number }[]> }) => {
+const HitList = ({ hits, offGrid }: { hits: Record<Inst, { step: number; dev: number }[]>; offGrid: number }) => {
   const fmt = (d: number) => (d === 0 ? 'on' : `${d > 0 ? '+' : ''}${d} ms`);
   const colour: Record<Inst, string> = { kick: 'text-amber-400', snare: 'text-teal-400', ghost: 'text-teal-400', hat: 'text-zinc-300' };
   return (
@@ -115,6 +115,14 @@ const HitList = ({ hits }: { hits: Record<Inst, { step: number; dev: number }[]>
       ))}
       <div className="text-xs text-zinc-400">
         Numbers are how far each hit sounds from its grid step. Minus is early, plus is late. Resolution is a few milliseconds. The grid uses the average per instrument.
+        {offGrid > 0 && (
+          <>
+            {' '}
+            <span className="text-amber-300">
+              {offGrid} hit{offGrid === 1 ? '' : 's'} in this bar sit between 16ths and are left out of the grid, most likely triplet hats. They still show in the lanes above; try the Triplets resolution.
+            </span>
+          </>
+        )}
       </div>
     </div>
   );

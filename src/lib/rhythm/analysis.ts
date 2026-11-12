@@ -15,7 +15,10 @@ export interface DrumEvent {
   hat?: Onset;
   r: number[];
   n: number[];
+  /** Crack-band sustain 40 ms after the onset, 0 (gone) to 1 (held). */
   cs: number;
+  /** Top-band sustain 40 ms after the onset. */
+  ts: number;
   snareLike: boolean;
 }
 
@@ -52,6 +55,8 @@ export interface BarDetection {
   swing: number;
   offsets: Offsets;
   hits: Record<Inst, BarHit[]>;
+  /** Hits more than 0.3 of a step from any 16th, usually triplets, left out of the grid. */
+  offGrid: number;
 }
 
 interface PeakOptions {
@@ -139,18 +144,32 @@ export function buildEvents(features: BandFeatures, sr: number): DrumEvent[] {
       if (!ev[o.band] || o.s > (ev[o.band] as Onset).s) ev[o.band] = o;
       continue;
     }
-    events.push({ i: o.i, [o.band]: o, r: [], n: [], cs: 0, snareLike: false });
+    events.push({ i: o.i, [o.band]: o, r: [], n: [], cs: 0, ts: 0, snareLike: false });
   }
+  const sustainAt = (a: Float32Array, i: number, rise: number): number => {
+    const before = Math.min(a[Math.max(0, i - 3)], a[Math.max(0, i - 2)], a[Math.max(0, i - 1)]);
+    return rise > 0 ? Math.max(0, Math.min(1, (a[Math.min(a.length - 1, i + later)] - before) / rise)) : 0;
+  };
   for (const ev of events) {
     ev.r = amp.map((a) => riseAt(a, ev.i, span));
-    const c = amp[2];
-    const before = Math.min(c[Math.max(0, ev.i - 3)], c[Math.max(0, ev.i - 2)], c[Math.max(0, ev.i - 1)]);
-    ev.cs = ev.r[2] > 0 ? Math.max(0, Math.min(1, (c[Math.min(c.length - 1, ev.i + later)] - before) / ev.r[2])) : 0;
+    ev.cs = sustainAt(amp[2], ev.i, ev.r[2]);
+    ev.ts = sustainAt(amp[3], ev.i, ev.r[3]);
   }
   const norms = amp.map((_, b) => pct95(events.map((e) => e.r[b])));
   for (const ev of events) ev.n = ev.r.map((r, b) => r / norms[b]);
-  const snareLike = (ev: DrumEvent): boolean =>
-    !!ev.mid && ev.n[2] >= 0.12 && ev.cs >= 0.25 && ev.n[1] / Math.max(ev.n[2], 1e-6) >= 0.2 && ev.n[0] / Math.max(ev.n[2], 1e-6) < 1.5;
+  // A snare's crack is still ringing 40 ms on but has started to fall (vocals and keys hold at full level), it is
+  // bright, and the low band does not dominate. With body under it a quiet crack is enough; a body-less snare,
+  // such as a clap or a tight trap snare, has to be loud in the crack band and may only have tripped the top-band
+  // detector.
+  const snareLike = (ev: DrumEvent): boolean => {
+    if (!ev.mid && !ev.hat) return false;
+    const [low, body, crack, top] = ev.n;
+    if (!ev.mid && crack < 0.45) return false;
+    if (crack < 0.12 || top < 0.15) return false;
+    if (ev.cs < 0.25 || ev.cs > 0.95) return false;
+    if (low / Math.max(crack, 1e-6) >= 1.5) return false;
+    return body / Math.max(crack, 1e-6) >= 0.2 || crack >= 0.45;
+  };
   const hatNorm = pct95(events.filter((e) => !snareLike(e)).map((e) => e.r[3]));
   for (const ev of events) {
     ev.n[3] = ev.r[3] / hatNorm;
@@ -160,8 +179,9 @@ export function buildEvents(features: BandFeatures, sr: number): DrumEvent[] {
 }
 
 /**
- * Kick: a clear low-band rise that does not hold like a bass note, with some attack above 150 Hz. Snare: crack that
- * lasts, body under it and the low band not dominant; the quieter ones are ghosts. Hat: a clear rise in the top band.
+ * Kick: a clear low-band rise that does not hold like a bass note, with some attack above 150 Hz. Snare: see
+ * `snareLike`; the quieter ones are ghosts. Hat: a clear rise in the top band that has started to fall 40 ms on,
+ * which separates hi-hats from vocal sibilance.
  */
 export function classifyEvents(events: DrumEvent[]): DrumOnsets {
   const out: DrumOnsets = { kick: [], snare: [], ghost: [], hat: [] };
@@ -169,8 +189,9 @@ export function classifyEvents(events: DrumEvent[]): DrumOnsets {
     const [low, body, crack, hat] = ev.n;
     const hasAttack = body >= 0.08 || crack >= 0.08;
     if (ev.low && low >= 0.3 && ev.low.sus < 0.85 && hasAttack) out.kick.push({ i: ev.i, t: ev.low.t, s: low });
-    if (ev.snareLike && ev.mid) (crack >= 0.4 ? out.snare : out.ghost).push({ i: ev.i, t: ev.mid.t, s: crack });
-    if (ev.hat && hat >= 0.25) out.hat.push({ i: ev.i, t: ev.hat.t, s: Math.min(1, hat) });
+    const snareOnset = ev.mid ?? ev.hat;
+    if (ev.snareLike && snareOnset) (crack >= 0.4 ? out.snare : out.ghost).push({ i: ev.i, t: snareOnset.t, s: crack });
+    if (ev.hat && hat >= 0.25 && ev.ts <= 0.85) out.hat.push({ i: ev.i, t: ev.hat.t, s: Math.min(1, hat) });
   }
   return out;
 }
@@ -327,13 +348,15 @@ export function detectBar(a: TrackAnalysis, barIndex: number): BarDetection {
   const bar = a.bars[barIndex], stepLen = a.beatLen / 4;
   const rows = emptyRows(16);
   const hits: Record<Inst, BarHit[]> = { kick: [], snare: [], ghost: [], hat: [] };
+  let offGrid = 0;
   const pickInst = (inst: Inst, onsets: Hit[], keepRatio: number) => {
     const inBar = onsets.filter((o) => o.t >= bar.start - stepLen / 2 && o.t < bar.end - stepLen / 2);
     const max = Math.max(0, ...inBar.map((o) => o.s));
     const byStep = new Map<number, Hit>();
     for (const o of inBar) {
-      const step = Math.round((o.t - bar.start) / stepLen);
+      const rel = (o.t - bar.start) / stepLen, step = Math.round(rel);
       if (step < 0 || step > 15) continue;
+      if (Math.abs(rel - step) > 0.3) { offGrid++; continue; }
       const cur = byStep.get(step);
       if (!cur || o.s > cur.s) byStep.set(step, o);
     }
@@ -366,5 +389,5 @@ export function detectBar(a: TrackAnalysis, barIndex: number): BarDetection {
   const oddHatDelay = mean(hits.hat.filter((h) => h.step % 2 === 1).map((h) => h.dev - offsets.hat));
   const swing = Math.round(Math.max(50, Math.min(75, 50 + 25 * (oddHatDelay / (0.5 * stepLen * 1000)))));
   for (const inst of Object.keys(hits) as Inst[]) hits[inst].sort((x, y) => x.step - y.step);
-  return { rows, swing, offsets, hits };
+  return { rows, swing, offsets, hits, offGrid };
 }
