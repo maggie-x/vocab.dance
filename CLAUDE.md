@@ -162,6 +162,10 @@ generated. Remove the WAV afterwards.
   dull in the top band.
 - Vocal sibilance lands in the hat band and sustains; hats must have fallen
   by 40 ms. Open hats lose out to this rule.
+- A file that starts on a hit has no rise to detect. `pickPeaks` adds an
+  onset at time zero for a band that opens at a clear level and decays, so
+  the beat-1 kick of a trimmed track is not lost. The default bar after
+  analysis is the first bar with drums, not the busiest.
 - Triplet hats sit a third of a step off the 16th grid. `detectBar` leaves
   hits more than 0.3 step from a 16th out of the grid and reports the count,
   rather than snapping them to the wrong cell.

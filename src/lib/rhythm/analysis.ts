@@ -87,6 +87,13 @@ export function pickPeaks(odf: Float32Array, amp: Float32Array, sr: number, opts
   const later = Math.round(0.15 * fr);
   const cands: Onset[] = [];
   let lastI = -Infinity;
+  // A file that opens with a hit already sounding has no rise to detect. If the band starts at a clear level and
+  // has decayed by 150 ms (an 808 holds its level for a while before falling), count a hit at time zero with the
+  // level it opens at.
+  if (n > later && amp[0] > 0 && (amp[0] >= 1.2 * amp[6] || amp[0] >= 2 * amp[later])) {
+    cands.push({ i: 0, t: 0, s: amp[0], sus: Math.max(0, Math.min(1, amp[later] / amp[0])) });
+    lastI = 0;
+  }
   for (let i = 3; i < n - 3; i++) {
     if (i - lastI < wt) continue;
     const v = odf[i] / norm;
@@ -116,6 +123,7 @@ export function pickPeaks(odf: Float32Array, amp: Float32Array, sr: number, opts
 
 function riseAt(ampArr: Float32Array, i: number, span: number): number {
   const n = ampArr.length;
+  if (i === 0) return ampArr[0];
   const before = Math.min(ampArr[Math.max(0, i - 3)], ampArr[Math.max(0, i - 2)], ampArr[Math.max(0, i - 1)]);
   let peak = 0;
   for (let j = i; j <= Math.min(n - 1, i + span); j++) if (ampArr[j] > peak) peak = ampArr[j];
@@ -176,7 +184,7 @@ export function buildEvents(features: BandFeatures, sr: number): DrumEvent[] {
     ev.r = amp.map((a) => riseAt(a, ev.i, span));
     ev.cs = sustainAt(amp[2], ev.i, ev.r[2]);
     ev.ts = sustainAt(amp[3], ev.i, ev.r[3]);
-    if (ev.low) ev.lowStart = lowStart(ev.low.i);
+    if (ev.low) ev.lowStart = ev.low.i === 0 ? 0 : lowStart(ev.low.i);
   }
   const norms = amp.map((_, b) => pct95(events.map((e) => e.r[b])));
   for (const ev of events) ev.n = ev.r.map((r, b) => r / norms[b]);
@@ -331,6 +339,14 @@ export function busiestBar(a: TrackAnalysis): number {
   let best = -1, idx = 0;
   a.bars.forEach((b, i) => { const s = barStrength(a.onsets, b); if (s > best) { best = s; idx = i; } });
   return idx;
+}
+
+/** The first bar with real drums in it, skipping a quiet lead-in: at least a quarter of the busiest bar's strength. */
+export function firstBarWithDrums(a: TrackAnalysis): number {
+  const strengths = a.bars.map((b) => barStrength(a.onsets, b));
+  const max = Math.max(0, ...strengths);
+  const idx = strengths.findIndex((s) => s >= 0.25 * max);
+  return idx < 0 ? 0 : idx;
 }
 
 /** Fits the grid at a tempo near `bpm` (within ±span) and rebuilds bars from the chosen downbeat. */

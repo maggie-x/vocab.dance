@@ -5,6 +5,7 @@ import {
   BarHit,
   detectBar,
   busiestBar,
+  firstBarWithDrums,
   fitTempo,
   shiftPhase,
   TrackAnalysis,
@@ -316,7 +317,7 @@ export function useRhythmLab() {
     } catch { setTrackStatus('Analysis failed in this browser.'); return; }
     const name = file.name.replace(/\.[^.]+$/, '');
     const base: TrackState = { name, buffer, analysis, barIndex: 0, hits: null, offGrid: 0, play: true, mode: 'loop' };
-    setTrack(applyDetection(base, busiestBar(analysis)));
+    setTrack(applyDetection(base, firstBarWithDrums(analysis)));
   }, [engine, applyDetection]);
 
   const setBarIndex = useCallback((idx: number) => {

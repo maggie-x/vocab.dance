@@ -1,5 +1,6 @@
-import { buildBars, chooseBarStart, classifyEvents, coarseTempo, detectBar, DrumEvent, DrumOnsets, fitGrid, Hit, impulseTrain, TrackAnalysis } from './analysis';
+import { buildBars, chooseBarStart, classifyEvents, coarseTempo, detectBar, DrumEvent, DrumOnsets, firstBarWithDrums, fitGrid, Hit, impulseTrain, pickPeaks, TrackAnalysis } from './analysis';
 import { HOP } from './dsp';
+import { busiestBar } from './analysis';
 
 const SR = 48000;
 const FR = SR / HOP;
@@ -99,6 +100,33 @@ describe('detectBar', () => {
     const det = detectBar(a, 1);
     expect(det.rows.hat.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 1, 5]);
     expect(det.offGrid).toBe(2);
+  });
+});
+
+describe('pickPeaks at the start of a file', () => {
+  it('counts a hit that is already sounding at time zero', () => {
+    const n = 200;
+    const odf = new Float32Array(n), amp = new Float32Array(n);
+    for (let i = 0; i < n; i++) amp[i] = Math.exp(-i / 8);
+    const peaks = pickPeaks(odf, amp, SR);
+    expect(peaks[0]).toMatchObject({ i: 0, t: 0 });
+    expect(peaks[0].s).toBeCloseTo(1, 5);
+    expect(peaks[0].sus).toBeLessThan(0.1);
+  });
+  it('does not invent one when the file opens quiet', () => {
+    const n = 200;
+    const odf = new Float32Array(n), amp = new Float32Array(n).fill(0.1);
+    expect(pickPeaks(odf, amp, SR)).toHaveLength(0);
+  });
+});
+
+describe('firstBarWithDrums', () => {
+  it('skips a quiet lead-in and lands on the first bar with drums', () => {
+    const bpm = 90, beat = 60 / bpm;
+    const o = backbeat(bpm, 4, 0.5 + 8 * beat);
+    const a: TrackAnalysis = { bpm, beatLen: beat, phase: 0.5, bars: buildBars(0.5, beat, 40), onsets: o, duration: 40 };
+    expect(firstBarWithDrums(a)).toBe(2);
+    expect(busiestBar(a)).toBeGreaterThanOrEqual(2);
   });
 });
 
