@@ -2,6 +2,8 @@ export type Res = '8' | '16' | '12';
 export type Inst = 'kick' | 'snare' | 'hat' | 'ghost';
 export type Rows = Record<Inst, boolean[]>;
 export type Offsets = Record<Inst, number>;
+/** Per-cell timing in milliseconds on top of swing and the instrument offset. Detection fills these in. */
+export type Nudges = Record<Inst, number[]>;
 
 export const RES: Record<Res, { steps: number; labels: string[] }> = {
   '8': { steps: 2, labels: ['1', '&'] },
@@ -49,6 +51,7 @@ export interface PatternConfig {
   rows: Rows;
   swing: number;
   offsets: Offsets;
+  nudges?: Nudges;
 }
 
 export const PRESETS: Preset[] = [
@@ -139,6 +142,21 @@ export function emptyRows(total: number): Rows {
 
 export function cloneRows(rows: Rows): Rows {
   return { kick: [...rows.kick], snare: [...rows.snare], hat: [...rows.hat], ghost: [...rows.ghost] };
+}
+
+export function emptyNudges(total: number): Nudges {
+  return { kick: new Array(total).fill(0), snare: new Array(total).fill(0), hat: new Array(total).fill(0), ghost: new Array(total).fill(0) };
+}
+
+export function cloneNudges(n: Nudges): Nudges {
+  return { kick: [...n.kick], snare: [...n.snare], hat: [...n.hat], ghost: [...n.ghost] };
+}
+
+/** Pads or trims per-cell values to the grid length, repeating the first bar when growing. */
+export function resizeNudges(n: Nudges, res: Res, bars: number): Nudges {
+  const spb = stepsPerBar(res), out = emptyNudges(spb * bars);
+  for (const inst of INSTS) for (let i = 0; i < spb * bars; i++) out[inst][i] = n[inst][i] ?? n[inst][i % spb] ?? 0;
+  return out;
 }
 
 export function configFrom(ref: PatternRef): PatternConfig {

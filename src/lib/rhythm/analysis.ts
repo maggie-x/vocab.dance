@@ -1,5 +1,6 @@
 import { BandFeatures, FFT_N, HOP } from './dsp';
-import { emptyRows, Inst, Offsets, Rows, ZERO_OFFSETS } from './patterns';
+import { emptyNudges, emptyRows, Inst, Nudges, Offsets, Rows, ZERO_OFFSETS } from './patterns';
+import { swingFor } from './timing';
 
 export interface Onset {
   i: number;
@@ -56,6 +57,8 @@ export interface BarDetection {
   rows: Rows;
   swing: number;
   offsets: Offsets;
+  /** Per-cell corrections so playback lands on each hit's detected time, not just the row average. */
+  nudges: Nudges;
   hits: Record<Inst, BarHit[]>;
   /** Hits that fit no 16th even with swing, usually triplets, left out of the grid. */
   offGrid: number;
@@ -416,6 +419,13 @@ export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1): BarDete
   offsets.ghost = offsets.snare;
   const oddHatDelay = mean(hits.hat.filter((h) => h.step % 2 === 1).map((h) => h.dev - offsets.hat));
   const swing = Math.round(Math.max(50, Math.min(75, 50 + 25 * (oddHatDelay / (0.5 * stepLen * 1000)))));
-  for (const inst of Object.keys(hits) as Inst[]) hits[inst].sort((x, y) => x.step - y.step);
-  return { rows, swing, offsets, hits, offGrid };
+  const nudges = emptyNudges(16 * bars);
+  for (const inst of Object.keys(hits) as Inst[]) {
+    hits[inst].sort((x, y) => x.step - y.step);
+    for (const h of hits[inst]) {
+      const expected = Math.round(swingFor(h.step, swing, a.bpm, '16') * 1000) + offsets[inst];
+      nudges[inst][h.step] = h.dev - expected;
+    }
+  }
+  return { rows, swing, offsets, nudges, hits, offGrid };
 }

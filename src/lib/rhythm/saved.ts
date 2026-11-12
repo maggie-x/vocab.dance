@@ -1,4 +1,4 @@
-import { emptyRows, hitsFrom, INSTS, Offsets, PatternConfig, RES, Res, Rows, stepsPerBar, ZERO_OFFSETS } from './patterns';
+import { emptyNudges, emptyRows, hitsFrom, INSTS, Nudges, Offsets, PatternConfig, RES, Res, Rows, stepsPerBar, ZERO_OFFSETS } from './patterns';
 
 /**
  * A rhythm kept in `src/data/rhythms.json`. Hits are beat strings like "1,2&,3e" (bar 2 of a two-bar pattern is
@@ -17,8 +17,12 @@ export interface SavedRhythm {
   ghost?: string;
   swing?: number;
   offsets?: Partial<Offsets>;
+  /** Per-hit timing in ms beyond swing and the instrument offset, keyed by count, e.g. { "kick": { "3e": -40 } }. */
+  nudges?: Partial<Record<Inst, Record<string, number>>>;
   notes?: string;
 }
+
+type Inst = keyof Rows;
 
 const SUBS: Record<Res, string[]> = { '16': ['', 'e', '&', 'a'], '8': ['', '&'], '12': ['', 't', 'l'] };
 
@@ -44,6 +48,15 @@ export function savedToConfig(r: SavedRhythm): PatternConfig & { bpm: number } {
   for (const inst of INSTS) hitsFrom(strings[inst], res).forEach((i) => { if (i >= 0 && i < total) rows[inst][i] = true; });
   const offsets: Offsets = { ...ZERO_OFFSETS, ...(r.offsets || {}) };
   if (r.offsets && r.offsets.ghost === undefined) offsets.ghost = offsets.snare;
+  const nudges = emptyNudges(total);
+  for (const inst of INSTS) {
+    const byName = r.nudges?.[inst];
+    if (!byName) continue;
+    for (const [name, ms] of Object.entries(byName)) {
+      const [step] = hitsFrom(name, res);
+      if (step !== undefined && step >= 0 && step < total) nudges[inst][step] = ms;
+    }
+  }
   return {
     name: r.name,
     purpose: [`From ${r.source}.`, r.notes].filter(Boolean).join(' '),
@@ -52,6 +65,7 @@ export function savedToConfig(r: SavedRhythm): PatternConfig & { bpm: number } {
     rows,
     swing: r.swing ?? 50,
     offsets,
+    nudges,
     bpm: r.bpm,
   };
 }
@@ -63,6 +77,7 @@ export interface CurrentPattern {
   rows: Rows;
   swing: number;
   offsets: Offsets;
+  nudges?: Nudges;
   bpm: number;
 }
 
@@ -75,6 +90,15 @@ export function configToSaved(p: CurrentPattern, source = ''): SavedRhythm {
   const offsets: Partial<Offsets> = {};
   for (const inst of ['kick', 'snare', 'hat'] as const) if (p.offsets[inst]) offsets[inst] = p.offsets[inst];
   if (Object.keys(offsets).length) entry.offsets = offsets;
+  if (p.nudges) {
+    const nudges: NonNullable<SavedRhythm['nudges']> = {};
+    for (const inst of INSTS) {
+      const byName: Record<string, number> = {};
+      p.nudges[inst].forEach((ms, i) => { if (ms && p.rows[inst][i]) byName[stepName(i, p.res)] = ms; });
+      if (Object.keys(byName).length) nudges[inst] = byName;
+    }
+    if (Object.keys(nudges).length) entry.nudges = nudges;
+  }
   return entry;
 }
 

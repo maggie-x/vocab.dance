@@ -21,7 +21,8 @@ const Grid = ({ lab }: { lab: RhythmLab }) => {
   const [saveName, setSaveName] = useState('');
   const per = RES[state.res].steps, spb = stepsPerBar(state.res), total = spb * state.bars;
   const cellSize = state.bars === 2 ? '26px' : '30px';
-  const style = { gridTemplateColumns: `auto repeat(${total}, var(--cell))`, '--cell': cellSize } as CSSProperties;
+  const columns = state.bars === 2 ? `auto repeat(${spb}, var(--cell)) 10px repeat(${spb}, var(--cell))` : `auto repeat(${total}, var(--cell))`;
+  const style = { gridTemplateColumns: columns, '--cell': cellSize } as CSSProperties;
 
   return (
     <section className="grid gap-4">
@@ -79,18 +80,18 @@ const Grid = ({ lab }: { lab: RhythmLab }) => {
             <div />
             {Array.from({ length: total }, (_, i) => {
               const sub = i % per, beatNo = Math.floor((i % spb) / per) + 1;
-              return (
+              return [
                 <div
                   key={`l${i}`}
                   className={clsx(
                     'grid h-7 place-items-center rounded-md text-xs tabular-nums',
-                    sub === 0 ? 'bg-white/5 text-base font-bold text-zinc-100' : 'text-zinc-500',
-                    i % spb === 0 && i > 0 && 'ml-2'
+                    sub === 0 ? 'bg-white/5 text-base font-bold text-zinc-100' : 'text-zinc-500'
                   )}
                 >
                   {sub === 0 ? beatNo : RES[state.res].labels[sub]}
-                </div>
-              );
+                </div>,
+                state.bars === 2 && i === spb - 1 ? <div key={`ls${i}`} /> : null,
+              ];
             })}
             {INSTS.map((inst) => (
               <Row key={inst} inst={inst} lab={lab} total={total} per={per} spb={spb} nowStep={nowStep} toggleCell={toggleCell} toggleMute={toggleMute} />
@@ -142,8 +143,8 @@ const Row = ({ inst, lab, total, per, spb, nowStep, toggleCell, toggleMute }: Ro
       </div>
       {Array.from({ length: total }, (_, i) => {
         const isOn = state.rows[inst][i];
-        const shift = isOn ? hitShift(i, inst, state.swing, state.offsets, state.bpm, state.res) : 0;
-        return (
+        const shift = isOn ? hitShift(i, inst, state.swing, state.offsets, state.bpm, state.res, state.nudges[inst][i] ?? 0) : 0;
+        return [
           <button
             key={i}
             type="button"
@@ -155,12 +156,12 @@ const Row = ({ inst, lab, total, per, spb, nowStep, toggleCell, toggleMute }: Ro
               inst,
               isOn ? clsx('on', INST_CELL[inst]) : 'border-zinc-700 bg-zinc-900',
               i % per === 0 && !isOn && 'bg-white/5 border-zinc-600',
-              i % spb === 0 && i > 0 && 'ml-2',
               Math.abs(shift) > 0.01 && 'shifted',
               nowStep === i && 'ring-2 ring-inset ring-white'
             )}
-          />
-        );
+          />,
+          state.bars === 2 && i === spb - 1 ? <div key={`s${i}`} /> : null,
+        ];
       })}
     </>
   );

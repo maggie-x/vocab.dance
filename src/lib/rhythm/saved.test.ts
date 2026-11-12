@@ -53,6 +53,18 @@ describe('saved rhythms', () => {
     expect(back.offsets.snare).toBe(-20);
   });
 
+  it('carries per-hit nudges by count name in both directions', () => {
+    const base = configFrom('boom');
+    const nudges = { kick: new Array(16).fill(0), snare: new Array(16).fill(0), hat: new Array(16).fill(0), ghost: new Array(16).fill(0) };
+    nudges.kick[8] = -35;
+    nudges.hat[3] = 12;
+    const entry = configToSaved({ ...base, nudges, bpm: 90 });
+    expect(entry.nudges).toEqual({ kick: { '3': -35 } });
+    const back = savedToConfig({ ...entry, source: 'x' });
+    expect(back.nudges?.kick[8]).toBe(-35);
+    expect(back.nudges?.hat[3]).toBe(0);
+  });
+
   it('leaves defaults out of the exported entry', () => {
     const entry = configToSaved({ ...configFrom('boom'), bpm: 90 });
     expect(entry.swing).toBeUndefined();

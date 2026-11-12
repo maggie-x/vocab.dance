@@ -77,6 +77,13 @@ page, so the logic is framework-free and the React layer is thin.
   detection; once edited, the pattern is kept and Detect does the re-read.
   In loop mode the engine plays the chosen track bar and the next one in
   turn when the grid has two bars.
+- Timing has three layers: swing (odd 16ths only), one offset per instrument,
+  and a per-cell nudge. Detection fills the nudges with each hit's deviation
+  from where swing plus offset would put it, so playback reproduces the
+  detected times exactly. Without nudges a straight kick on a swung grid
+  plays late by the swing amount. Toggling a cell resets its nudge. Saved
+  rhythms carry nudges keyed by count name, e.g. `"nudges": {"kick": {"3e":
+  -40}}`, and the Copy as JSON export writes only non-zero ones.
 
 ### Saved rhythms (`src/data/rhythms.json`)
 

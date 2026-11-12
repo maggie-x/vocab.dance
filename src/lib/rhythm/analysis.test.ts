@@ -60,6 +60,22 @@ describe('detectBar', () => {
     expect(det.offsets.snare).toBe(-20);
     expect(det.swing).toBe(50);
     expect(det.offGrid).toBe(0);
+    expect(det.nudges.kick.every((n) => n === 0)).toBe(true);
+  });
+  it('gives a straight kick on a swung grid a nudge that cancels the swing', () => {
+    const bpm = 90, beat = 60 / bpm, start = 0.5, step = beat / 4;
+    const o = backbeat(bpm, 2, start);
+    const hit = (t: number, s = 1): Hit => ({ i: Math.round((t * SR) / HOP), t, s });
+    const bar2 = start + 4 * beat;
+    // Hats swung 66%: odd 16ths a third of a step late. One kick exactly on the "e" of 3, unswung.
+    o.hat = Array.from({ length: 16 }, (_, s) => hit(bar2 + s * step + (s % 2 ? step / 3 : 0), 0.5));
+    o.kick.push(hit(bar2 + 9 * step));
+    const a: TrackAnalysis = { bpm, beatLen: beat, phase: start, bars: buildBars(start, beat, 20), onsets: o, duration: 20 };
+    const det = detectBar(a, 1);
+    expect(det.swing).toBeGreaterThanOrEqual(65);
+    expect(det.rows.kick[9]).toBe(true);
+    const swingMs = Math.round(((det.swing - 50) / 25) * 0.5 * step * 1000);
+    expect(det.nudges.kick[9] + swingMs + det.offsets.kick).toBe(0);
   });
   it('detects two consecutive bars into a 32-step grid', () => {
     const bpm = 90, beat = 60 / bpm, start = 0.5;

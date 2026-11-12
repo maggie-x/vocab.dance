@@ -12,18 +12,22 @@ import {
 import { BandFeatures } from '../lib/rhythm/dsp';
 import { Engine, EngineEvent, EngineSnapshot, TrackMode } from '../lib/rhythm/engine';
 import {
+  cloneNudges,
   cloneRows,
   configFrom,
+  emptyNudges,
   emptyRows,
   HEAR_SETS,
   HearMode,
   Inst,
+  Nudges,
   Offsets,
   PatternConfig,
   PRESETS,
   remapRows,
   Res,
   resizeBars,
+  resizeNudges,
   Rows,
   stepsPerBar,
   ZERO_OFFSETS,
@@ -38,6 +42,7 @@ export interface LabState {
   rows: Rows;
   swing: number;
   offsets: Offsets;
+  nudges: Nudges;
   bpm: number;
   mute: Record<Inst, boolean>;
   metronome: boolean;
@@ -62,6 +67,7 @@ export interface SavedPattern {
   rows: Rows;
   swing: number;
   offsets: Offsets;
+  nudges?: Nudges;
 }
 
 export type TrackHear = 'track' | 'drums' | 'both';
@@ -76,6 +82,7 @@ const initialState: LabState = {
   rows: initialConfig.rows,
   swing: 50,
   offsets: { ...ZERO_OFFSETS },
+  nudges: emptyNudges(16),
   bpm: 90,
   mute: { ...HEAR_SETS.all },
   metronome: false,
@@ -121,7 +128,7 @@ export function useRhythmLab() {
     const getState = (): EngineSnapshot => {
       const s = stateRef.current, t = trackRef.current;
       return {
-        bpm: s.bpm, res: s.res, bars: s.bars, rows: s.rows, mute: s.mute, swing: s.swing, offsets: s.offsets, metronome: s.metronome,
+        bpm: s.bpm, res: s.res, bars: s.bars, rows: s.rows, mute: s.mute, swing: s.swing, offsets: s.offsets, nudges: s.nudges, metronome: s.metronome,
         track: t ? { buffer: t.buffer, bars: t.analysis.bars, barIndex: t.barIndex, bpm: t.analysis.bpm, beatLen: t.analysis.beatLen, play: t.play, mode: t.mode } : null,
       };
     };
@@ -167,6 +174,7 @@ export function useRhythmLab() {
       rows: cloneRows(cfg.rows),
       swing: cfg.swing,
       offsets: { ...ZERO_OFFSETS, ...cfg.offsets },
+      nudges: cfg.nudges ? cloneNudges(cfg.nudges) : emptyNudges(stepsPerBar(cfg.res) * cfg.bars),
       mystery: opts.keepMystery ? s.mystery : null,
     }));
     if (opts.toast !== false) showToast(`Loaded: ${cfg.name}`);
@@ -184,10 +192,11 @@ export function useRhythmLab() {
 
   const toggleCell = useCallback((inst: Inst, step: number) => {
     setState((s) => {
-      const rows = cloneRows(s.rows);
+      const rows = cloneRows(s.rows), nudges = cloneNudges(s.nudges);
       rows[inst][step] = !rows[inst][step];
+      nudges[inst][step] = 0;
       const name = s.name && !s.name.endsWith(' (edited)') ? `${s.name} (edited)` : s.name;
-      return { ...s, rows, name, mystery: null };
+      return { ...s, rows, nudges, name, mystery: null };
     });
   }, []);
 
@@ -195,24 +204,24 @@ export function useRhythmLab() {
   const setHear = useCallback((mode: HearMode) => setState((s) => ({ ...s, mute: { ...HEAR_SETS[mode] } })), []);
 
   const setRes = useCallback((res: Res) => {
-    setState((s) => (s.res === res ? s : { ...s, res, rows: remapRows(s.rows, s.res, res, s.bars) }));
+    setState((s) => (s.res === res ? s : { ...s, res, rows: remapRows(s.rows, s.res, res, s.bars), nudges: emptyNudges(stepsPerBar(res) * s.bars) }));
     window.setTimeout(() => engine.clampPosition(), 0);
   }, [engine]);
 
   const clear = useCallback(() => {
-    setState((s) => ({ ...s, rows: emptyRows(stepsPerBar(s.res) * s.bars), name: 'Blank', purpose: 'Build your own. Start with a kick on 1 and a snare on 2 and 4.', mystery: null }));
+    setState((s) => ({ ...s, rows: emptyRows(stepsPerBar(s.res) * s.bars), nudges: emptyNudges(stepsPerBar(s.res) * s.bars), name: 'Blank', purpose: 'Build your own. Start with a kick on 1 and a snare on 2 and 4.', mystery: null }));
   }, []);
 
   const saveMine = useCallback((name: string) => {
     const s = stateRef.current;
-    const saved: SavedPattern = { name, res: s.res, bars: s.bars, rows: cloneRows(s.rows), swing: s.swing, offsets: { ...s.offsets } };
+    const saved: SavedPattern = { name, res: s.res, bars: s.bars, rows: cloneRows(s.rows), swing: s.swing, offsets: { ...s.offsets }, nudges: cloneNudges(s.nudges) };
     setMine([...mine, saved]);
     setState((st) => ({ ...st, name }));
     showToast(`Saved: ${name}`);
   }, [mine, setMine, showToast]);
 
   const loadSaved = useCallback((p: SavedPattern) => {
-    loadAndPlay({ name: p.name, purpose: 'Saved in this browser.', res: p.res, bars: p.bars, rows: p.rows, swing: p.swing, offsets: p.offsets });
+    loadAndPlay({ name: p.name, purpose: 'Saved in this browser.', res: p.res, bars: p.bars, rows: p.rows, swing: p.swing, offsets: p.offsets, nudges: p.nudges });
   }, [loadAndPlay]);
 
   const loadSavedRhythm = useCallback((r: SavedRhythm) => {
@@ -224,7 +233,7 @@ export function useRhythmLab() {
   /** Copies the current grid as a rhythms.json entry with an empty source. */
   const copyAsJson = useCallback(async () => {
     const s = stateRef.current;
-    const json = savedToJson(configToSaved({ name: s.name, res: s.res, bars: s.bars, rows: s.rows, swing: s.swing, offsets: s.offsets, bpm: s.bpm }));
+    const json = savedToJson(configToSaved({ name: s.name, res: s.res, bars: s.bars, rows: s.rows, swing: s.swing, offsets: s.offsets, nudges: s.nudges, bpm: s.bpm }));
     try {
       await navigator.clipboard.writeText(json);
       showToast('Copied. Paste into src/data/rhythms.json and fill in the source.');
@@ -262,7 +271,7 @@ export function useRhythmLab() {
     loadConfig({
       name: `${t.name} · ${barLabel(t, barIndex, bars)}`,
       purpose: 'Detected from your audio. Kick from the low band, snare from the mid band, hats from the top. Fix anything that sounds wrong by clicking cells.',
-      res: '16', bars, rows: det.rows, swing: det.swing, offsets: det.offsets,
+      res: '16', bars, rows: det.rows, swing: det.swing, offsets: det.offsets, nudges: det.nudges,
     }, { toast: false });
     setTrackStatus(`${t.name}: ${t.analysis.bpm} BPM detected. Grid shows what was heard in ${barLabel(t, barIndex, bars)}.`);
     return { ...t, barIndex, hits: det.hits, offGrid: det.offGrid };
@@ -284,7 +293,7 @@ export function useRhythmLab() {
       setTrack(applyDetection(t, t.barIndex, bars));
       return;
     }
-    setState((s) => ({ ...s, bars, rows: resizeBars(s.rows, s.res, bars) }));
+    setState((s) => ({ ...s, bars, rows: resizeBars(s.rows, s.res, bars), nudges: resizeNudges(s.nudges, s.res, bars) }));
     window.setTimeout(() => engine.clampPosition(), 0);
     if (t) showToast(`Your edits are kept. Press Detect to read ${bars === 2 ? 'two bars' : 'one bar'} from the track.`);
   }, [engine, applyDetection, showToast]);

@@ -10,7 +10,12 @@ export function swingFor(step: number, swing: number, bpm: number, res: Res): nu
   return ((swing - 50) / 25) * 0.5 * stepDur(bpm, res);
 }
 
+/** Seconds a hit sounds after its grid cell: swing, the instrument offset and the cell's own nudge. */
+export function hitDelay(step: number, inst: Inst, swing: number, offsets: Offsets, bpm: number, res: Res, nudgeMs = 0): number {
+  return swingFor(step, swing, bpm, res) + (offsets[inst] + nudgeMs) / 1000;
+}
+
 /** Where a hit actually sounds relative to its grid cell, as a fraction of one step. */
-export function hitShift(step: number, inst: Inst, swing: number, offsets: Offsets, bpm: number, res: Res): number {
-  return (swingFor(step, swing, bpm, res) + offsets[inst] / 1000) / stepDur(bpm, res);
+export function hitShift(step: number, inst: Inst, swing: number, offsets: Offsets, bpm: number, res: Res, nudgeMs = 0): number {
+  return hitDelay(step, inst, swing, offsets, bpm, res, nudgeMs) / stepDur(bpm, res);
 }

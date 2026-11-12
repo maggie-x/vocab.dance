@@ -1,7 +1,7 @@
 import { Bar } from './analysis';
-import { Inst, INSTS, Offsets, RES, Res, Rows, stepsPerBar } from './patterns';
+import { Inst, INSTS, Nudges, Offsets, RES, Res, Rows, stepsPerBar } from './patterns';
 import { DrumSynth } from './synth';
-import { beatDur, stepDur, swingFor } from './timing';
+import { beatDur, hitDelay, stepDur } from './timing';
 
 export type TrackMode = 'loop' | 'through';
 
@@ -23,6 +23,7 @@ export interface EngineSnapshot {
   mute: Record<Inst, boolean>;
   swing: number;
   offsets: Offsets;
+  nudges: Nudges;
   metronome: boolean;
   track: TrackPlayback | null;
 }
@@ -169,7 +170,7 @@ export class Engine {
     const spb = stepsPerBar(s.res);
     for (const inst of INSTS) {
       if (!s.rows[inst][step] || s.mute[inst]) continue;
-      const at = t + swingFor(step, s.swing, s.bpm, s.res) + s.offsets[inst] / 1000;
+      const at = t + hitDelay(step, inst, s.swing, s.offsets, s.bpm, s.res, s.nudges[inst][step] ?? 0);
       if (inst === 'kick') synth.kick(at);
       else if (inst === 'snare') synth.snare(at, 1);
       else if (inst === 'ghost') synth.snare(at, 0.3);
