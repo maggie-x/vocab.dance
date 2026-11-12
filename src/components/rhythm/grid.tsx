@@ -77,7 +77,7 @@ const Grid = ({ lab }: { lab: RhythmLab }) => {
         </div>
         <p className="text-xs text-zinc-400">{state.mystery ? 'Listen first. The hits are hidden until you answer.' : state.purpose}</p>
         <div className="pb-1">
-          <div className={clsx('rl-grid grid w-full gap-[3px]', state.mystery && 'mystery')} style={style}>
+          <div className={clsx('rl-grid grid w-full justify-start gap-[3px]', state.mystery && 'mystery')} style={style}>
             <div />
             {Array.from({ length: total }, (_, i) => {
               const sub = i % per, beatNo = Math.floor((i % spb) / per) + 1;
