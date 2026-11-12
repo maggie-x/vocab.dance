@@ -55,7 +55,7 @@ export interface BarDetection {
   swing: number;
   offsets: Offsets;
   hits: Record<Inst, BarHit[]>;
-  /** Hits more than 0.3 of a step from any 16th, usually triplets, left out of the grid. */
+  /** Hits that fit no 16th even with swing, usually triplets, left out of the grid. */
   offGrid: number;
 }
 
@@ -343,27 +343,35 @@ export async function analyseAudio(
   return fitTempo(base, coarse, 0.04);
 }
 
-/** Snaps the detected hits of one bar onto a 16-step grid with the average timing per instrument. */
-export function detectBar(a: TrackAnalysis, barIndex: number): BarDetection {
-  const bar = a.bars[barIndex], stepLen = a.beatLen / 4;
-  const rows = emptyRows(16);
+/**
+ * Snaps the detected hits of one or two consecutive bars onto a 16-step-per-bar grid with the average timing per
+ * instrument. Steps 16 to 31 are the second bar; it stays empty when the track ends first.
+ */
+export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1): BarDetection {
+  const stepLen = a.beatLen / 4;
+  const count = Math.max(1, Math.min(bars, a.bars.length - barIndex));
+  const rows = emptyRows(16 * bars);
   const hits: Record<Inst, BarHit[]> = { kick: [], snare: [], ghost: [], hat: [] };
   let offGrid = 0;
   const pickInst = (inst: Inst, onsets: Hit[], keepRatio: number) => {
-    const inBar = onsets.filter((o) => o.t >= bar.start - stepLen / 2 && o.t < bar.end - stepLen / 2);
-    const max = Math.max(0, ...inBar.map((o) => o.s));
+    const start = a.bars[barIndex].start, end = a.bars[barIndex + count - 1].end;
+    const inRange = onsets.filter((o) => o.t >= start - stepLen / 2 && o.t < end - stepLen / 2);
+    const max = Math.max(0, ...inRange.map((o) => o.s));
     const byStep = new Map<number, Hit>();
-    for (const o of inBar) {
-      const rel = (o.t - bar.start) / stepLen, step = Math.round(rel);
-      if (step < 0 || step > 15) continue;
-      if (Math.abs(rel - step) > 0.3) { offGrid++; continue; }
+    for (const o of inRange) {
+      const rel = (o.t - start) / stepLen, step = Math.round(rel);
+      if (step < 0 || step >= 16 * count) continue;
+      // Swing only delays the e and a, by up to half a step at 75%, so those may run late. Beats and 8ths may lag
+      // a laid-back 0.4 of a step. Anything earlier than 0.3 of a step is not on this grid.
+      const dev = rel - step, lateLimit = step % 2 === 1 ? 0.5 : 0.4;
+      if (dev < -0.3 || dev > lateLimit) { offGrid++; continue; }
       const cur = byStep.get(step);
       if (!cur || o.s > cur.s) byStep.set(step, o);
     }
     byStep.forEach((o, step) => {
       const rel = max ? o.s / max : 0;
       if (rel < keepRatio) return;
-      const dev = Math.round((o.t - (bar.start + step * stepLen)) * 1000);
+      const dev = Math.round((o.t - (start + step * stepLen)) * 1000);
       rows[inst][step] = true;
       hits[inst].push({ step, dev, rel });
     });

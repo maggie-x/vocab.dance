@@ -61,15 +61,27 @@ describe('detectBar', () => {
     expect(det.swing).toBe(50);
     expect(det.offGrid).toBe(0);
   });
-  it('leaves hits between 16ths, such as triplet hats, out of the grid and counts them', () => {
+  it('detects two consecutive bars into a 32-step grid', () => {
     const bpm = 90, beat = 60 / bpm, start = 0.5;
+    const o = backbeat(bpm, 4, start);
+    const a: TrackAnalysis = { bpm, beatLen: beat, phase: start, bars: buildBars(start, beat, 20), onsets: o, duration: 20 };
+    const det = detectBar(a, 1, 2);
+    expect(det.rows.kick).toHaveLength(32);
+    expect(det.rows.kick.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 8, 16, 24]);
+    expect(det.rows.snare.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([4, 12, 20, 28]);
+    const last = detectBar(a, 3, 2);
+    expect(last.rows.kick.slice(16).some(Boolean)).toBe(false);
+  });
+  it('keeps a heavily swung offbeat but drops hits that fit no 16th', () => {
+    const bpm = 90, beat = 60 / bpm, start = 0.5, step = beat / 4;
     const o = backbeat(bpm, 2, start);
     const hit = (t: number): Hit => ({ i: Math.round((t * SR) / HOP), t, s: 0.5 });
     const bar2 = start + 4 * beat;
-    o.hat = [hit(bar2), hit(bar2 + beat / 3), hit(bar2 + (2 * beat) / 3), hit(bar2 + beat)];
+    // A swung "e" 0.45 step late, a hit 0.45 step early of the "&", and a triplet pair in beat 2.
+    o.hat = [hit(bar2), hit(bar2 + step * 1.45), hit(bar2 + step * 1.55), hit(bar2 + beat + beat / 3), hit(bar2 + beat + (2 * beat) / 3)];
     const a: TrackAnalysis = { bpm, beatLen: beat, phase: start, bars: buildBars(start, beat, 20), onsets: o, duration: 20 };
     const det = detectBar(a, 1);
-    expect(det.rows.hat.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 4]);
+    expect(det.rows.hat.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 1, 5]);
     expect(det.offGrid).toBe(2);
   });
 });

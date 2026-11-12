@@ -148,9 +148,10 @@ export class Engine {
     return src;
   }
 
-  private startTrackBar(s: EngineSnapshot, t: number): void {
+  /** Loop mode: a two-bar grid plays the chosen bar and the one after it in turn. */
+  private startTrackBar(s: EngineSnapshot, t: number, gridBar: number): void {
     const track = s.track as TrackPlayback;
-    const bar = track.bars[track.barIndex];
+    const bar = track.bars[Math.min(track.barIndex + gridBar, track.bars.length - 1)];
     this.trackSource(s).start(t, bar.start, bar.end - bar.start);
   }
 
@@ -183,7 +184,7 @@ export class Engine {
       const s = this.getState();
       const spb = stepsPerBar(s.res), total = spb * s.bars;
       if (s.track && s.track.play && this.currentStep % spb === 0) {
-        if (s.track.mode === 'loop') this.startTrackBar(s, this.nextTime);
+        if (s.track.mode === 'loop') this.startTrackBar(s, this.nextTime, Math.floor(this.currentStep / spb));
         else if (this.stepsScheduled > 0) {
           const idx = this.startBar + Math.floor((this.startStep + this.stepsScheduled) / spb);
           if (idx >= s.track.bars.length) {

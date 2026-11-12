@@ -12,6 +12,7 @@ const btn = 'rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs h
 
 const TrackTab = ({ lab }: { lab: RhythmLab }) => {
   const { track, trackStatus, loadFile, setBarIndex, detectCurrentBar, retune, shiftStart, setTrackMode, trackHear, setTrackHear, busiest } = lab;
+  const twoBars = lab.state.bars === 2 && !!track && track.barIndex + 1 < track.analysis.bars.length;
   const [bpmText, setBpmText] = useState('');
   useEffect(() => { if (track) setBpmText(String(track.analysis.bpm)); }, [track?.analysis.bpm, track]);
 
@@ -60,7 +61,7 @@ const TrackTab = ({ lab }: { lab: RhythmLab }) => {
                   <button type="button" aria-label="Next bar" className={clsx(segBtn(false), 'border-l border-zinc-700')} onClick={() => setBarIndex(track.barIndex + 1)}>›</button>
                 </div>
                 <span className="text-xs tabular-nums text-zinc-100">
-                  Bar {track.barIndex + 1} of {track.analysis.bars.length} · starts {track.analysis.bars[track.barIndex].start.toFixed(2)} s
+                  {twoBars ? `Bars ${track.barIndex + 1}–${track.barIndex + 2}` : `Bar ${track.barIndex + 1}`} of {track.analysis.bars.length} · starts {track.analysis.bars[track.barIndex].start.toFixed(2)} s
                 </span>
                 <button type="button" className={btn} onClick={() => setBarIndex(busiest())}>Busiest bar</button>
               </div>
@@ -88,10 +89,10 @@ const TrackTab = ({ lab }: { lab: RhythmLab }) => {
                   ))}
                 </div>
               </div>
-              <button type="button" className={btn} onClick={detectCurrentBar}>Detect this bar</button>
+              <button type="button" className={btn} onClick={detectCurrentBar}>{twoBars ? 'Detect these bars' : 'Detect this bar'}</button>
             </div>
             <p className="text-xs text-zinc-400">
-              Play through runs the track from the chosen bar to the end while your grid pattern loops alongside it. Edit cells until the grid matches what you hear. Moving bars keeps your pattern; "Detect this bar" replaces it with a fresh guess. Use Hear to listen to the track alone, your grid drums alone, or both together.
+              Play through runs the track from the chosen bar to the end while your grid pattern loops alongside it. Edit cells until the grid matches what you hear. Moving bars keeps your pattern; Detect replaces it with a fresh guess. The 1 bar / 2 bars switch above the grid sets how many bars are read. Use Hear to listen to the track alone, your grid drums alone, or both together.
             </p>
             <TrackCanvas track={track} onPick={setBarIndex} />
             {track.hits && <HitList hits={track.hits} offGrid={track.offGrid} />}

@@ -70,8 +70,13 @@ page, so the logic is framework-free and the React layer is thin.
   log-Gaussian prior around 90 BPM, then a fine fit treating the 16th grid as
   a phase wheel. Downbeat: kicks on 1 and 3, snares on 2 and 4, kick 1
   strongest; when kick 1 and 3 are identical this is a coin toss, which is
-  why the UI has beat-shift buttons. `detectBar` snaps one bar's hits to 16
-  steps and averages timing per instrument into the grid's offsets.
+  why the UI has beat-shift buttons. `detectBar` snaps one or two
+  consecutive bars' hits to 16 steps per bar, following the grid's 1 bar /
+  2 bars switch, and averages timing per instrument into the grid's offsets.
+  Flipping that switch re-detects while the grid holds an untouched
+  detection; once edited, the pattern is kept and Detect does the re-read.
+  In loop mode the engine plays the chosen track bar and the next one in
+  turn when the grid has two bars.
 
 ### Saved rhythms (`src/data/rhythms.json`)
 

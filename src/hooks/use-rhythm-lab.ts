@@ -199,11 +199,6 @@ export function useRhythmLab() {
     window.setTimeout(() => engine.clampPosition(), 0);
   }, [engine]);
 
-  const setBars = useCallback((bars: number) => {
-    setState((s) => (s.bars === bars ? s : { ...s, bars, rows: resizeBars(s.rows, s.res, bars) }));
-    window.setTimeout(() => engine.clampPosition(), 0);
-  }, [engine]);
-
   const clear = useCallback(() => {
     setState((s) => ({ ...s, rows: emptyRows(stepsPerBar(s.res) * s.bars), name: 'Blank', purpose: 'Build your own. Start with a kick on 1 and a snare on 2 and 4.', mystery: null }));
   }, []);
@@ -258,17 +253,41 @@ export function useRhythmLab() {
   }, []);
 
   // ---- Track analysis ----
-  const applyDetection = useCallback((t: TrackState, barIndex: number): TrackState => {
-    const det = detectBar(t.analysis, barIndex);
+  const barLabel = (t: TrackState, barIndex: number, bars: number): string =>
+    bars === 2 && barIndex + 1 < t.analysis.bars.length ? `bars ${barIndex + 1}–${barIndex + 2}` : `bar ${barIndex + 1}`;
+
+  const applyDetection = useCallback((t: TrackState, barIndex: number, bars = stateRef.current.bars): TrackState => {
+    const det = detectBar(t.analysis, barIndex, bars);
     setState((s) => ({ ...s, bpm: Math.round(t.analysis.bpm) }));
     loadConfig({
-      name: `${t.name} · bar ${barIndex + 1}`,
+      name: `${t.name} · ${barLabel(t, barIndex, bars)}`,
       purpose: 'Detected from your audio. Kick from the low band, snare from the mid band, hats from the top. Fix anything that sounds wrong by clicking cells.',
-      res: '16', bars: 1, rows: det.rows, swing: det.swing, offsets: det.offsets,
+      res: '16', bars, rows: det.rows, swing: det.swing, offsets: det.offsets,
     }, { toast: false });
-    setTrackStatus(`${t.name}: ${t.analysis.bpm} BPM detected. Grid shows what was heard in bar ${barIndex + 1}.`);
+    setTrackStatus(`${t.name}: ${t.analysis.bpm} BPM detected. Grid shows what was heard in ${barLabel(t, barIndex, bars)}.`);
     return { ...t, barIndex, hits: det.hits, offGrid: det.offGrid };
   }, [loadConfig]);
+
+  /** True while the grid still holds a detection as it came out of the analyser. */
+  const gridIsDetection = () => {
+    const t = trackRef.current, s = stateRef.current;
+    return !!t && s.name.startsWith(`${t.name} · bar`) && !s.name.endsWith(' (edited)');
+  };
+
+  /** One or two bars. With an untouched detection in the grid, re-reads that many bars from the track. */
+  const setBars = useCallback((bars: number) => {
+    if (stateRef.current.bars === bars) return;
+    const t = trackRef.current;
+    if (t && gridIsDetection()) {
+      engine.stop();
+      setState((s) => ({ ...s, bars }));
+      setTrack(applyDetection(t, t.barIndex, bars));
+      return;
+    }
+    setState((s) => ({ ...s, bars, rows: resizeBars(s.rows, s.res, bars) }));
+    window.setTimeout(() => engine.clampPosition(), 0);
+    if (t) showToast(`Your edits are kept. Press Detect to read ${bars === 2 ? 'two bars' : 'one bar'} from the track.`);
+  }, [engine, applyDetection, showToast]);
 
   const loadFile = useCallback(async (file: File) => {
     engine.stop();
@@ -303,7 +322,7 @@ export function useRhythmLab() {
     if (!t) return;
     engine.stop();
     setTrack(applyDetection(t, t.barIndex));
-    showToast(`Grid replaced with what was heard in bar ${t.barIndex + 1}`);
+    showToast(`Grid replaced with what was heard in ${barLabel(t, t.barIndex, stateRef.current.bars)}`);
   }, [engine, applyDetection, showToast]);
 
   const retune = useCallback((bpm: number) => {
