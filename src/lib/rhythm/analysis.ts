@@ -1,5 +1,5 @@
 import { BandFeatures, FFT_N, HOP } from './dsp';
-import { emptyNudges, emptyRows, Inst, Nudges, Offsets, Rows, ZERO_OFFSETS } from './patterns';
+import { emptyNudges, emptyRows, Inst, Nudges, Offsets, RES, Res, Rows, stepsPerBar, ZERO_OFFSETS } from './patterns';
 import { swingFor } from './timing';
 
 export interface Onset {
@@ -148,7 +148,7 @@ export function buildEvents(features: BandFeatures, sr: number): DrumEvent[] {
   const all: Tagged[] = [
     ...tag(pickPeaks(odf[0], amp[0], sr, { wait: 0.1, delta: 0.2 }), 'low'),
     ...tag(pickPeaks(snareOdf, amp[1], sr, { wait: 0.06 }), 'mid'),
-    ...tag(pickPeaks(odf[3], amp[3], sr, { wait: 0.03, delta: 0.1 }), 'hat'),
+    ...tag(pickPeaks(odf[3], amp[3], sr, { wait: 0.03, delta: 0.06 }), 'hat'),
   ].sort((a, b) => a.i - b.i);
   const win = Math.round(0.025 * fr), span = Math.round(0.035 * fr), later = Math.round(0.04 * fr);
   const events: DrumEvent[] = [];
@@ -383,13 +383,15 @@ export async function analyseAudio(
 }
 
 /**
- * Snaps the detected hits of one or two consecutive bars onto a 16-step-per-bar grid with the average timing per
- * instrument. Steps 16 to 31 are the second bar; it stays empty when the track ends first.
+ * Snaps the detected hits of one or two consecutive bars onto the grid at the given resolution (8ths, 16ths or
+ * triplets) with the average timing per instrument. The second bar follows the first; it stays empty when the
+ * track ends first.
  */
-export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1): BarDetection {
-  const stepLen = a.beatLen / 4;
+export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1, res: Res = '16'): BarDetection {
+  const per = RES[res].steps, spb = stepsPerBar(res), stepLen = a.beatLen / per;
+  const swings = res !== '12';
   const count = Math.max(1, Math.min(bars, a.bars.length - barIndex));
-  const rows = emptyRows(16 * bars);
+  const rows = emptyRows(spb * bars);
   const hits: Record<Inst, BarHit[]> = { kick: [], snare: [], ghost: [], hat: [] };
   let offGrid = 0;
   const pickInst = (inst: Inst, onsets: Hit[], keepRatio: number) => {
@@ -399,10 +401,10 @@ export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1): BarDete
     const byStep = new Map<number, Hit>();
     for (const o of inRange) {
       const rel = (o.t - start) / stepLen, step = Math.round(rel);
-      if (step < 0 || step >= 16 * count) continue;
-      // Swing only delays the e and a, by up to half a step at 75%, so those may run late. Beats and 8ths may lag
+      if (step < 0 || step >= spb * count) continue;
+      // Swing only delays the odd steps, by up to half a step at 75%, so those may run late. Other steps may lag
       // a laid-back 0.4 of a step. Anything earlier than 0.3 of a step is not on this grid.
-      const dev = rel - step, lateLimit = step % 2 === 1 ? 0.5 : 0.4;
+      const dev = rel - step, lateLimit = swings && step % 2 === 1 ? 0.5 : 0.4;
       if (dev < -0.3 || dev > lateLimit) { offGrid++; continue; }
       const cur = byStep.get(step);
       if (!cur || o.s > cur.s) byStep.set(step, o);
@@ -424,7 +426,7 @@ export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1): BarDete
   }
   const mean = (arr: number[]) => (arr.length ? Math.round(arr.reduce((x, y) => x + y, 0) / arr.length) : 0);
   const clamp = (v: number) => Math.max(-40, Math.min(40, v));
-  const evenDev = (list: BarHit[]) => list.filter((h) => h.step % 2 === 0).map((h) => h.dev);
+  const evenDev = (list: BarHit[]) => (swings ? list.filter((h) => h.step % 2 === 0) : list).map((h) => h.dev);
   const devOf = (list: BarHit[]) => (evenDev(list).length ? evenDev(list) : list.map((h) => h.dev));
   const offsets: Offsets = {
     ...ZERO_OFFSETS,
@@ -433,13 +435,13 @@ export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1): BarDete
     hat: clamp(mean(evenDev(hits.hat))),
   };
   offsets.ghost = offsets.snare;
-  const oddHatDelay = mean(hits.hat.filter((h) => h.step % 2 === 1).map((h) => h.dev - offsets.hat));
+  const oddHatDelay = swings ? mean(hits.hat.filter((h) => h.step % 2 === 1).map((h) => h.dev - offsets.hat)) : 0;
   const swing = Math.round(Math.max(50, Math.min(75, 50 + 25 * (oddHatDelay / (0.5 * stepLen * 1000)))));
-  const nudges = emptyNudges(16 * bars);
+  const nudges = emptyNudges(spb * bars);
   for (const inst of Object.keys(hits) as Inst[]) {
     hits[inst].sort((x, y) => x.step - y.step);
     for (const h of hits[inst]) {
-      const expected = Math.round(swingFor(h.step, swing, a.bpm, '16') * 1000) + offsets[inst];
+      const expected = Math.round(swingFor(h.step, swing, a.bpm, res) * 1000) + offsets[inst];
       nudges[inst][h.step] = h.dev - expected;
     }
   }

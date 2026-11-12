@@ -166,9 +166,12 @@ generated. Remove the WAV afterwards.
   onset at time zero for a band that opens at a clear level and decays, so
   the beat-1 kick of a trimmed track is not lost. The default bar after
   analysis is the first bar with drums, not the busiest.
-- Triplet hats sit a third of a step off the 16th grid. `detectBar` leaves
-  hits more than 0.3 step from a 16th out of the grid and reports the count,
-  rather than snapping them to the wrong cell.
+- Triplet hats sit a third of a step off the 16th grid. `detectBar` follows
+  the grid's resolution switch (8ths, 16ths, triplets), leaves hits that fit
+  no step out of the grid and reports the count rather than snapping them to
+  the wrong cell. Flipping the resolution re-detects while the grid holds an
+  untouched detection, like the bars switch. Trap-style hats often need the
+  Triplets grid.
 - To debug detection on a real file, decode it with ffmpeg to mono 48 kHz
   s16le, compile the pure modules with `tsc --module commonjs` into a scratch
   folder and run them from a Node script over the PCM. Print per-event band

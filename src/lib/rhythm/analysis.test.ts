@@ -89,6 +89,24 @@ describe('detectBar', () => {
     const last = detectBar(a, 3, 2);
     expect(last.rows.kick.slice(16).some(Boolean)).toBe(false);
   });
+  it('reads triplet hats onto the triplet grid', () => {
+    const bpm = 90, beat = 60 / bpm, start = 0.5;
+    const o = backbeat(bpm, 2, start);
+    const hit = (t: number): Hit => ({ i: Math.round((t * SR) / HOP), t, s: 0.5 });
+    const bar2 = start + 4 * beat;
+    o.hat = [];
+    for (let b = 0; b < 4; b++) for (let k = 0; k < 3; k++) o.hat.push(hit(bar2 + b * beat + (k * beat) / 3));
+    const a: TrackAnalysis = { bpm, beatLen: beat, phase: start, bars: buildBars(start, beat, 20), onsets: o, duration: 20 };
+    const trip = detectBar(a, 1, 1, '12');
+    expect(trip.rows.hat).toHaveLength(12);
+    expect(trip.rows.hat.every(Boolean)).toBe(true);
+    expect(trip.rows.kick.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 6]);
+    expect(trip.rows.snare.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([3, 9]);
+    expect(trip.offGrid).toBe(0);
+    expect(trip.swing).toBe(50);
+    const sixteenths = detectBar(a, 1, 1, '16');
+    expect(sixteenths.offGrid).toBeGreaterThan(0);
+  });
   it('keeps a heavily swung offbeat but drops hits that fit no 16th', () => {
     const bpm = 90, beat = 60 / bpm, start = 0.5, step = beat / 4;
     const o = backbeat(bpm, 2, start);

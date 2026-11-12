@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { RhythmLab, TrackHear, TrackState } from '../../hooks/use-rhythm-lab';
 import { Hit } from '../../lib/rhythm/analysis';
 import { TrackMode } from '../../lib/rhythm/engine';
-import { Inst, INST_NAME, stepLabel } from '../../lib/rhythm/patterns';
+import { Inst, INST_NAME, Res } from '../../lib/rhythm/patterns';
+import { stepName } from '../../lib/rhythm/saved';
 
 const COLOURS = { kick: '#fbbf24', snare: '#2dd4bf', hat: '#d4d4d8', fg: '#f4f4f5', muted: '#a1a1aa', line: '#3f3f46' };
 
@@ -92,10 +93,10 @@ const TrackTab = ({ lab }: { lab: RhythmLab }) => {
               <button type="button" className={btn} onClick={detectCurrentBar}>{twoBars ? 'Detect these bars' : 'Detect this bar'}</button>
             </div>
             <p className="text-xs text-zinc-400">
-              Play through runs the track from the chosen bar to the end while your grid pattern loops alongside it. Edit cells until the grid matches what you hear. Moving bars keeps your pattern; Detect replaces it with a fresh guess. The 1 bar / 2 bars switch above the grid sets how many bars are read. Use Hear to listen to the track alone, your grid drums alone, or both together.
+              Play through runs the track from the chosen bar to the end while your grid pattern loops alongside it. Edit cells until the grid matches what you hear. Moving bars keeps your pattern; Detect replaces it with a fresh guess. The bars and resolution switches above the grid set how many bars are read and onto which grid: use Triplets for triplet hats. Use Hear to listen to the track alone, your grid drums alone, or both together.
             </p>
             <TrackCanvas track={track} onPick={setBarIndex} />
-            {track.hits && <HitList hits={track.hits} offGrid={track.offGrid} />}
+            {track.hits && <HitList hits={track.hits} offGrid={track.offGrid} res={lab.state.res} />}
           </>
         )}
       </div>
@@ -103,7 +104,7 @@ const TrackTab = ({ lab }: { lab: RhythmLab }) => {
   );
 };
 
-const HitList = ({ hits, offGrid }: { hits: Record<Inst, { step: number; dev: number }[]>; offGrid: number }) => {
+const HitList = ({ hits, offGrid, res }: { hits: Record<Inst, { step: number; dev: number }[]>; offGrid: number; res: Res }) => {
   const fmt = (d: number) => (d === 0 ? 'on' : `${d > 0 ? '+' : ''}${d} ms`);
   const colour: Record<Inst, string> = { kick: 'text-amber-400', snare: 'text-teal-400', ghost: 'text-teal-400', hat: 'text-zinc-300' };
   return (
@@ -111,7 +112,7 @@ const HitList = ({ hits, offGrid }: { hits: Record<Inst, { step: number; dev: nu
       {(['kick', 'snare', 'ghost', 'hat'] as Inst[]).filter((inst) => hits[inst].length).map((inst) => (
         <div key={inst} className="min-w-0">
           <strong className={colour[inst]}>{inst === 'ghost' ? 'Ghost (quieter snare)' : INST_NAME[inst]}</strong>{' '}
-          <span className="text-zinc-400">{hits[inst].map((h) => `${stepLabel(h.step)} (${fmt(h.dev)})`).join(' · ')}</span>
+          <span className="text-zinc-400">{hits[inst].map((h) => `${stepName(h.step, res)} (${fmt(h.dev)})`).join(' · ')}</span>
         </div>
       ))}
       <div className="text-xs text-zinc-400">
@@ -120,7 +121,8 @@ const HitList = ({ hits, offGrid }: { hits: Record<Inst, { step: number; dev: nu
           <>
             {' '}
             <span className="text-amber-300">
-              {offGrid} hit{offGrid === 1 ? '' : 's'} in this bar sit between 16ths and are left out of the grid, most likely triplet hats. They still show in the lanes above; try the Triplets resolution.
+              {offGrid} hit{offGrid === 1 ? '' : 's'} in this bar sit between grid steps and are left out. They still show in the lanes above.
+              {res === '16' ? ' Hats on triplets are the usual cause; switch the grid to Triplets to read them.' : res === '12' ? ' Try 16ths if these are straight hits.' : ' Try 16ths for finer detail.'}
             </span>
           </>
         )}

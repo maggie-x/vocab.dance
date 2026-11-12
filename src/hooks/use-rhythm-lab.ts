@@ -204,11 +204,6 @@ export function useRhythmLab() {
   const toggleMute = useCallback((inst: Inst) => setState((s) => ({ ...s, mute: { ...s.mute, [inst]: !s.mute[inst] } })), []);
   const setHear = useCallback((mode: HearMode) => setState((s) => ({ ...s, mute: { ...HEAR_SETS[mode] } })), []);
 
-  const setRes = useCallback((res: Res) => {
-    setState((s) => (s.res === res ? s : { ...s, res, rows: remapRows(s.rows, s.res, res, s.bars), nudges: emptyNudges(stepsPerBar(res) * s.bars) }));
-    window.setTimeout(() => engine.clampPosition(), 0);
-  }, [engine]);
-
   const clear = useCallback(() => {
     setState((s) => ({ ...s, rows: emptyRows(stepsPerBar(s.res) * s.bars), nudges: emptyNudges(stepsPerBar(s.res) * s.bars), name: 'Blank', purpose: 'Build your own. Start with a kick on 1 and a snare on 2 and 4.', mystery: null }));
   }, []);
@@ -266,13 +261,13 @@ export function useRhythmLab() {
   const barLabel = (t: TrackState, barIndex: number, bars: number): string =>
     bars === 2 && barIndex + 1 < t.analysis.bars.length ? `bars ${barIndex + 1}–${barIndex + 2}` : `bar ${barIndex + 1}`;
 
-  const applyDetection = useCallback((t: TrackState, barIndex: number, bars = stateRef.current.bars): TrackState => {
-    const det = detectBar(t.analysis, barIndex, bars);
+  const applyDetection = useCallback((t: TrackState, barIndex: number, bars = stateRef.current.bars, res: Res = stateRef.current.res): TrackState => {
+    const det = detectBar(t.analysis, barIndex, bars, res);
     setState((s) => ({ ...s, bpm: Math.round(t.analysis.bpm) }));
     loadConfig({
       name: `${t.name} · ${barLabel(t, barIndex, bars)}`,
       purpose: 'Detected from your audio. Kick from the low band, snare from the mid band, hats from the top. Fix anything that sounds wrong by clicking cells.',
-      res: '16', bars, rows: det.rows, swing: det.swing, offsets: det.offsets, nudges: det.nudges,
+      res, bars, rows: det.rows, swing: det.swing, offsets: det.offsets, nudges: det.nudges,
     }, { toast: false });
     setTrackStatus(`${t.name}: ${t.analysis.bpm} BPM detected. Grid shows what was heard in ${barLabel(t, barIndex, bars)}.`);
     return { ...t, barIndex, hits: det.hits, offGrid: det.offGrid };
@@ -297,6 +292,21 @@ export function useRhythmLab() {
     setState((s) => ({ ...s, bars, rows: resizeBars(s.rows, s.res, bars), nudges: resizeNudges(s.nudges, s.res, bars) }));
     window.setTimeout(() => engine.clampPosition(), 0);
     if (t) showToast(`Your edits are kept. Press Detect to read ${bars === 2 ? 'two bars' : 'one bar'} from the track.`);
+  }, [engine, applyDetection, showToast]);
+
+  /** 8ths, 16ths or triplets. With an untouched detection in the grid, re-reads the track onto the new grid. */
+  const setRes = useCallback((res: Res) => {
+    if (stateRef.current.res === res) return;
+    const t = trackRef.current;
+    if (t && gridIsDetection()) {
+      engine.stop();
+      setState((s) => ({ ...s, res }));
+      setTrack(applyDetection(t, t.barIndex, stateRef.current.bars, res));
+      return;
+    }
+    setState((s) => ({ ...s, res, rows: remapRows(s.rows, s.res, res, s.bars), nudges: emptyNudges(stepsPerBar(res) * s.bars) }));
+    window.setTimeout(() => engine.clampPosition(), 0);
+    if (t) showToast('Your edits are kept. Press Detect to read the track onto this grid.');
   }, [engine, applyDetection, showToast]);
 
   const loadFile = useCallback(async (file: File) => {
