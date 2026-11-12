@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 export type ViewMode = 'cards' | 'list';
 
@@ -17,6 +18,7 @@ interface ViewMenuProps {
 const ViewMenu = ({ viewMode, onChange, onAbout }: ViewMenuProps) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const onRhythm = useLocation().pathname.startsWith('/rhythm');
 
   useEffect(() => {
     if (!open) {
@@ -82,6 +84,16 @@ const ViewMenu = ({ viewMode, onChange, onAbout }: ViewMenuProps) => {
             </li>
           ))}
           <li role="separator" className="my-1 border-t border-zinc-700" />
+          <li role="none">
+            <Link
+              to={onRhythm ? '/' : '/rhythm'}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center px-4 py-2 text-left text-zinc-300 hover:bg-zinc-700"
+            >
+              {onRhythm ? 'Dance moves' : 'Rhythm lab'}
+            </Link>
+          </li>
           <li role="none">
             <button
               type="button"

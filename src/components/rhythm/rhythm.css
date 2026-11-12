@@ -1,0 +1,60 @@
+/* Grid cells: the coloured cell is the grid position; the mark inside slides early or late by --shiftf steps. */
+.rl-cell {
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+}
+.rl-cell.on::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(50% + var(--cell) * var(--shiftf, 0));
+  transform: translate(-50%, -50%);
+}
+.rl-cell.kick.on::after { width: 60%; height: 60%; border-radius: 50%; background: #1c1006; opacity: 0.85; }
+.rl-cell.snare.on::after { width: 55%; height: 55%; background: #042f2e; opacity: 0.85; border-radius: 3px; }
+.rl-cell.hat.on::after { width: 3px; height: 55%; background: #18181b; border-radius: 2px; }
+.rl-cell.ghost.on::after { width: 36%; height: 36%; border-radius: 50%; border: 2px solid #2dd4bf; }
+.rl-cell.shifted::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.45);
+}
+.rl-cell.ghost.shifted::before { background: #2dd4bf; opacity: 0.6; }
+.rl-grid.mystery .rl-cell.on { background: #27272a; border: 1px solid #3f3f46; }
+.rl-grid.mystery .rl-cell.on::after,
+.rl-grid.mystery .rl-cell.on::before { display: none; }
+
+/* Per-row switch: filled with the instrument colour when audible. */
+.rl-switch {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: #27272a;
+  border: 1px solid #3f3f46;
+  flex: none;
+  cursor: pointer;
+  padding: 0;
+}
+.rl-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #a1a1aa;
+  transition: transform 0.15s, background 0.15s;
+}
+.rl-switch[aria-pressed='true'] { background: currentColor; border-color: transparent; }
+.rl-switch[aria-pressed='true']::after { transform: translateX(14px); background: #18181b; }
+@media (prefers-reduced-motion: reduce) {
+  .rl-switch::after { transition: none; }
+}

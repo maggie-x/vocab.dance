@@ -4,12 +4,17 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import RhythmApp from './rhythm-app';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
 const router = createBrowserRouter([
+  {
+    path: '/rhythm',
+    element: <RhythmApp />,
+  },
   {
     path: '/:style/:move',
     element: <App />,

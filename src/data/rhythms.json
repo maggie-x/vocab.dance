@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Everytime",
+    "source": "J Dilla – Everytime (Instrumental), bar 24",
+    "bpm": 81,
+    "res": "16",
+    "bars": 1,
+    "kick": "1,1a,2,2a,3&,4e,4&",
+    "snare": "2,4",
+    "hat": "1,1&,2,2&,3,3&,4,4&",
+    "ghost": "2&,4&",
+    "offsets": {
+      "kick": 6,
+      "snare": -12,
+      "hat": 5
+    },
+    "notes": "Kick leans late, snare early."
+  }
+]
