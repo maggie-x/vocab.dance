@@ -15,5 +15,41 @@
       "hat": 5
     },
     "notes": "Kick leans late, snare early."
+  },
+  {
+    "name": "hitdifferent",
+    "source": "JK whoisjk – hitdifferent, bars 1–2",
+    "bpm": 97,
+    "res": "16",
+    "bars": 2,
+    "kick": "1,1a,2&,3&,5,7e,7&",
+    "snare": "2,4,6,8",
+    "hat": "1&,2a,3e,3&,5,5e,6a,7e,7&,8&",
+    "swing": 67,
+    "offsets": {
+      "kick": -2,
+      "snare": -2,
+      "hat": 10
+    },
+    "nudges": {
+      "kick": {
+        "1a": -34,
+        "7e": -53,
+        "7&": 1
+      },
+      "hat": {
+        "5": 52,
+        "1&": 55,
+        "2a": -137,
+        "3e": -123,
+        "3&": -64,
+        "5e": 1,
+        "6a": -136,
+        "7e": -123,
+        "7&": -64,
+        "8&": 39
+      }
+    },
+    "notes": "Trap-style hats on triplets, carried by per-hit timing."
   }
 ]
