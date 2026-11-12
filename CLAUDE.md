@@ -3,14 +3,14 @@
 Dance Vocab Index: a searchable dictionary of dance moves, plus the Rhythm lab
 (Kick & Snare Lab) at `/rhythm`. Create React App 5, TypeScript, Tailwind 3,
 react-router 6, deployed to Netlify (`public/_redirects` sends every path to
-`index.html`).
+`index.html`). The GitHub repo is public.
 
 ## Commands
 
 ```bash
-npm start                                     # dev server on :3000
+npm start                                         # dev server on :3000
 CI=true npx react-scripts test --watchAll=false   # run Jest once
-npx tsc --noEmit -p tsconfig.json             # type-check everything
+npx tsc --noEmit -p tsconfig.json                 # type-check everything
 npm run build
 ```
 
@@ -32,6 +32,10 @@ about Node 24 but builds fine.
   localStorage through `useLocalStorage` from `react-use`.
 - Move data is hand-written in `src/data/*.ts`. `FEEDBACK.md` is the running
   todo list for the move index.
+- Never commit audio. The repo and the Netlify site are public, so a song in
+  `public/` is a published copyrighted recording. Real tracks stay outside
+  the repo; only the JSON entries they produce are committed. When a track is
+  staged in `public/` for an in-app check, delete it before `git add -A`.
 
 ## Rhythm lab
 
@@ -43,55 +47,112 @@ page, so the logic is framework-free and the React layer is thin.
 
 - `patterns.ts`: types, the groove library (presets, variants, concept demos,
   exercises), beat-string parsing (`"1,2&,3e"` to step indices), resolution
-  remapping, bar resizing, labels. Pure.
-- `timing.ts`: swing and microtiming maths. Swing delays the odd 16ths (the
-  `e` and `a`) by up to half a step at 75%; triplets never swing. `hitShift`
-  is the fraction of a step a hit sounds off its cell; the grid draws it.
+  remapping, bar and nudge resizing, labels. Pure.
+- `timing.ts`: swing and microtiming maths. `hitDelay` is the seconds a hit
+  sounds after its cell: swing (odd steps only, up to half a step at 75%,
+  never on triplets) plus the instrument offset plus the cell's nudge.
+  `hitShift` is the same as a fraction of a step; the grid draws it.
 - `synth.ts`: synthesised kick, snare, ghost, hat and click through a shared
   bus with soft saturation and a dark low-pass, meant to sound like a dusty
-  sampler. No audio files anywhere.
+  sampler. No audio files anywhere. Offbeat hats play quieter.
 - `engine.ts`: lookahead scheduler on the Web Audio clock. It reads the
   pattern through a `getState` callback every time it schedules a step, so
   edits during playback apply on the next pass. Emits `step`, `bar`, `end`
-  and `state` events. Also owns track playback: loop one bar, or play through
-  from the chosen bar with the grid looping alongside, bar events advancing
-  the UI and `end` stopping at the track's end.
+  and `state` events. Owns track playback too: loop mode plays the chosen
+  track bar, and the next one in turn when the grid has two bars; play
+  through runs the track from the chosen bar to the end with the grid looping
+  alongside, bar events advancing the UI and `end` stopping it. The track's
+  playback rate is grid tempo over fitted tempo, so bar lengths match exactly
+  and tempo rounding cannot drift.
 - `dsp.ts`: FFT and `bandFeatures`, the SuperFlux-style onset function per
-  band (log-magnitude spectral flux against a frequency max-filtered earlier
-  frame) plus per-band amplitude. Runs inside `analysis.worker.ts`.
-- `analysis.ts`: everything after the spectrogram. Peak picking after librosa
-  (local max, local-mean threshold, minimum gap, first of a cluster kept),
-  with strength as the amplitude rise at the onset so sustained bass does not
-  count. Onsets within 25 ms merge into events judged by spectral shape:
-  kick needs a low rise that does not sustain and some attack above 150 Hz;
-  snare needs crack that is still ringing 40 ms later with body under it and
-  a non-dominant low band, quieter ones are ghosts; hats need a top-band
-  rise measured against non-snare events. Tempo: autocorrelation with a
-  log-Gaussian prior around 90 BPM, then a fine fit treating the 16th grid as
-  a phase wheel. Downbeat: kicks on 1 and 3, snares on 2 and 4, kick 1
-  strongest; when kick 1 and 3 are identical this is a coin toss, which is
-  why the UI has beat-shift buttons. `detectBar` snaps one or two
-  consecutive bars' hits to 16 steps per bar, following the grid's 1 bar /
-  2 bars switch, and averages timing per instrument into the grid's offsets.
-  Flipping that switch re-detects while the grid holds an untouched
-  detection; once edited, the pattern is kept and Detect does the re-read.
-  In loop mode the engine plays the chosen track bar and the next one in
-  turn when the grid has two bars.
-- Timing has three layers: swing (odd 16ths only), one offset per instrument,
-  and a per-cell nudge. Detection fills the nudges with each hit's deviation
-  from where swing plus offset would put it, so playback reproduces the
-  detected times exactly. Without nudges a straight kick on a swung grid
-  plays late by the swing amount. Toggling a cell resets its nudge. Saved
-  rhythms carry nudges keyed by count name, e.g. `"nudges": {"kick": {"3e":
-  -40}}`, and the Copy as JSON export writes only non-zero ones.
+  band (log-magnitude spectral flux against a frequency max-filtered frame two
+  hops earlier) plus per-band amplitude, 2048-point window, hop 256. Runs
+  inside `analysis.worker.ts`.
+- `analysis.ts`: everything after the spectrogram; see Detection below.
+- `saved.ts`: the `rhythms.json` entry format and its conversion to and from
+  grid configs, including nudges keyed by count name.
+
+### Detection, and why each rule exists
+
+Every rule below came from measuring, first on generated loops whose hit
+times are known exactly, then on a real trap-style track. Keep that order
+when changing anything.
+
+- **Bands.** Kick 35–140 Hz, snare body 150–800 Hz, snare crack 1–4 kHz, hats
+  6–16 kHz. The snare detector runs on body plus half the crack flux.
+- **Peak picking** follows librosa: local maximum over ±30 ms, above the
+  ±100 ms local mean by a threshold, at least a minimum gap apart with the
+  first of a cluster kept. Strength is the band amplitude's rise at the onset,
+  not its level, so a sustained bass or pad under the drums does not count.
+  Sustain is how much of that rise remains 150 ms later.
+- **Start of file.** A track trimmed to begin on its first kick has no rise to
+  detect. A band that opens at a clear level and has decayed by 150 ms gets an
+  onset at time zero with the opening level as strength.
+- **Events.** Onsets from the three detectors within 25 ms are one event,
+  which keeps each band's own onset time and how much every band rose,
+  normalised to the loudest rises in that band. Hats are normalised against
+  non-snare events only, because snares are usually the brightest thing in the
+  top band and would otherwise hide quiet hats.
+- **Kick**: low rise at least 0.3 of the loudest, not sustaining like a bass
+  note (under 0.85 at 150 ms), with some attack above 150 Hz. The attack test
+  exists because the low band wobbles after a kick when its tail beats against
+  a bass note and those wobbles have nothing above 150 Hz.
+- **Snare**: crack still ringing 40 ms on but starting to fall (vocals and
+  keys hold at full level), bright in the top band (vocals are dull), low band
+  not dominant, and either body under a quiet crack or a loud crack without
+  body. Trap snares and claps have almost no body; a kick's click can out-rise
+  a snare in the body band, so that band alone can never decide. A body-less
+  snare may only have tripped the top-band detector and is taken from there.
+  Quieter snares are ghosts.
+- **Hat**: top-band rise at least 0.25 and fallen by 40 ms. Vocal sibilance
+  lands in the hat band and sustains; open hats lose out to this rule.
+- **Tempo**: coarse by autocorrelation of the kick-plus-snare onset train with
+  a log-Gaussian prior around 90 BPM and half-period reinforcement, folded into
+  62–135; fine by treating the 16th grid as a phase wheel and finding the tempo
+  where all onsets add up most coherently, to a hundredth of a BPM. The mean
+  angle is the grid phase.
+- **Downbeat**: kicks favour beats 1 and 3, snares 2 and 4, kick 1 slightly
+  stronger. Identical kicks on 1 and 3 make this a coin toss, hence the
+  "Beat 1 is off?" buttons that shift the bar start by a beat.
+- **Absolute timing.** Onset times must be right in absolute terms, not just
+  consistent, because bar boundaries come from them and the track is played
+  against the grid. The flux peaks when the attack is near the middle of the
+  window, so a frame's time is `frame * hop + N/2`; the end-of-window formula
+  ran about 15 ms late and made the synth drums lag the record. The low band
+  fills in 10 to 15 ms after a kick's click, so a kick is timed where its
+  low-band amplitude has risen a fifth of the way to its peak. Never borrow
+  another band's onset time for a kick: a hat on the grid under a late kick
+  sits in the same event and would erase the lateness. Resolution is about
+  5 ms.
+- **Grid placement** (`detectBar`): reads one or two consecutive bars onto
+  the grid's current resolution (8ths, 16ths or triplets). Every hit goes to
+  its nearest cell and keeps its true timing through the cell's nudge, so a
+  hat on a triplet lands in the nearest 16th a third of a step off rather than
+  being lost. Only a hit that loses its cell to a stronger one is dropped and
+  counted. Offsets are the per-instrument average of on-beat and 8th hits;
+  swing is read only from odd-step hats that run late, so triplet hats no
+  longer inflate it. The default bar after analysis is the first bar with
+  drums, not the busiest.
+- **Known limit.** One grid per pattern. On the trap track the kicks live on
+  16ths and the hats on triplets or sextuplets; the 16th grid now carries both
+  through nudges, but a hit between two cells that both hold hits is dropped.
+
+### Timing model
+
+Three layers: swing (odd steps only), one offset per instrument, and a
+per-cell nudge in milliseconds. Detection fills the nudges with each hit's
+deviation from where swing plus offset would put it, so playback reproduces
+the detected times exactly. Without nudges a straight kick on a swung grid
+plays late by the swing amount, which is how the need was found. Toggling a
+cell resets its nudge.
 
 ### Saved rhythms (`src/data/rhythms.json`)
 
 Rhythms taken from real songs, shown in the Grooves tab under "Saved". The
-file is a JSON array; `src/lib/rhythm/saved.ts` converts entries to grid
-configs and back. Every entry needs a `source` (the song) and a `bpm`. Hits are
-beat strings, the same notation as the presets; a two-bar entry writes its
-second bar as beats 5 to 8.
+file is a JSON array; `saved.ts` converts entries to grid configs and back.
+Every entry needs a `source` (the song) and a `bpm`. Hits are beat strings, the
+same notation as the presets; a two-bar entry writes its second bar as beats 5
+to 8.
 
 ```json
 {
@@ -107,17 +168,20 @@ second bar as beats 5 to 8.
   "ghost": "2a",
   "swing": 58,
   "offsets": { "kick": 6, "snare": -12, "hat": -5 },
+  "nudges": { "kick": { "3e": -40 } },
   "notes": "Kick sits late, snare early."
 }
 ```
 
-`res`, `bars`, `ghost`, `swing`, `offsets`, `notes` and `sourceUrl` are
-optional. Offsets are milliseconds, negative is early; the ghost offset
-follows the snare unless given.
-
-Workflow for adding one: analyse the track on the Your track tab, fix the
-grid by ear, press "Copy as JSON" above the grid, paste the entry into the
-array and fill in `source`. Loading a saved rhythm also sets the tempo.
+`res`, `bars`, `ghost`, `swing`, `offsets`, `nudges`, `notes` and `sourceUrl`
+are optional. Offsets and nudges are milliseconds, negative is early; the ghost
+offset follows the snare unless given. Workflow: analyse the track on the Your
+track tab, fix the grid by ear, press "Copy as JSON" above the grid (it writes
+only non-default fields and non-zero nudges), paste the entry into the array
+and fill in `source`. Loading a saved rhythm also sets the tempo. Entries
+detected before a detector change keep playing correctly because nudges
+capture the measured times, but their swing and offsets may read oddly; re-run
+detection when the file is handy.
 
 ### React layer
 
@@ -128,22 +192,46 @@ array and fill in `source`. Loading a saved rhythm also sets the tempo.
   Loading a groove from any card (`loadAndPlay`) first calls `soloGrid`: all
   rows on, the track silent but still loaded. Otherwise a groove chosen while
   in "Track only" plays into muted rows and seems not to load.
+- The bars and resolution switches re-detect at once while the grid holds an
+  untouched detection (name still the detection name, no "(edited)"); once
+  edited they keep the pattern and Detect does the re-read.
 - `src/pages/rhythm.tsx` composes transport, grid, tab bar and the four tabs.
   `src/rhythm-app.tsx` is the page shell with the site menu.
 - One component per section under `src/components/rhythm`. The grid's cell
-  markers slide by `--shiftf` steps and a centre line appears when shifted;
-  that is the only visualisation of microtiming, by design.
+  markers slide by `--shiftf` of the cell and a centre line appears when
+  shifted; that is the only visualisation of microtiming, by design.
+- Grid layout: columns are `max-content` for the row header and
+  `minmax(0, 34px)` per cell, with a real spacer column between bars, and the
+  grid justifies to the start. Cells shrink to fit so the whole pattern is
+  always in view with no sideways scroll. An `auto` header track absorbed free
+  space when wide and was handed less than its content when tight; margins on
+  cells spilled into neighbours. Do not reintroduce either.
 
 ### Testing
 
 Jest tests sit next to the modules in `src/lib/rhythm/*.test.ts` and cover
-only pure logic: parsing, remapping, swing maths, FFT bin placement, onset
-placement on a synthetic kick and hat, tempo and downbeat on synthetic onset
-trains, bar detection, and event classification on synthetic band shapes.
-There are no audio or DOM tests. When changing detection, generate a WAV with
-known hits and offsets (a Node script writing 16-bit PCM is enough), drop it in
-`public/`, load it on the Your track tab and compare the grid to what you
-generated. Remove the WAV afterwards.
+only pure logic: parsing, remapping, swing and nudge maths, FFT bin placement,
+onset placement, start-of-file onsets, tempo and downbeat on synthetic onset
+trains, bar detection at both resolutions, nudge round-trips, and event
+classification on synthetic band shapes. There are no audio or DOM tests.
+
+Two kinds of real check, in this order:
+
+1. Offline harness. Decode a file with `ffmpeg -ac 1 -ar 48000 -f s16le`,
+   compile the pure modules with `tsc --module commonjs --target es2019` into
+   a scratch folder, and run them from a Node script over the PCM. For
+   generated loops compare detector times with the exact times written into
+   the WAV; for a real track print per-event band shapes, sustains, per-step
+   histograms and detector-minus-waveform-onset statistics. Every detector
+   rule in this file was found this way.
+2. In the app. Stage the file in `public/`, start the dev server, open
+   `/rhythm` in the browser pane, and feed the file to the upload input from a
+   script (fetch, wrap in `File`, set `input.files`, dispatch `change`). Read
+   results from the DOM. Remove the file before committing.
+
+Generated loops: a Node script writing 16-bit PCM is enough. Use at least one
+plain loop and one with bass and pad under swung drums, quieter offbeat hats, a
+kick on 2& every other bar and an early snare.
 
 ### Gotchas
 
@@ -151,44 +239,12 @@ generated. Remove the WAV afterwards.
   `new Worker(new URL('./analysis.worker.ts', import.meta.url))`, which CRA's
   webpack 5 handles. Jest cannot parse `import.meta`, so tests must not import
   the hook or the worker; keep DSP in `dsp.ts` and test that.
-- The low band wobbles after a kick when its tail beats against a bass note;
-  that is why a kick requires attack energy above 150 Hz.
-- A kick's click can out-rise a snare in the 150 to 800 Hz band, so never
-  judge a snare by that band alone.
-- Trap-style snares and claps have almost no body. A snare is accepted with
-  body under a quiet crack, or without body when the crack is loud, and it
-  may only have tripped the top-band detector. Vocals and keys are told
-  apart by crack sustain (they hold at full level 40 ms on) and by being
-  dull in the top band.
-- Vocal sibilance lands in the hat band and sustains; hats must have fallen
-  by 40 ms. Open hats lose out to this rule.
-- A file that starts on a hit has no rise to detect. `pickPeaks` adds an
-  onset at time zero for a band that opens at a clear level and decays, so
-  the beat-1 kick of a trimmed track is not lost. The default bar after
-  analysis is the first bar with drums, not the busiest.
-- Triplet hats sit a third of a step off the 16th grid. `detectBar` follows
-  the grid's resolution switch (8ths, 16ths, triplets) and puts every hit in
-  its nearest cell with the true timing carried by the cell's nudge, so
-  nothing is lost to the grid; only a hit that loses its cell to a stronger
-  one is dropped, and that count is reported. Flipping the resolution
-  re-detects while the grid holds an untouched detection, like the bars
-  switch. Swing is read only from odd-step hats that run late.
-- To debug detection on a real file, decode it with ffmpeg to mono 48 kHz
-  s16le, compile the pure modules with `tsc --module commonjs` into a scratch
-  folder and run them from a Node script over the PCM. Print per-event band
-  shapes, sustains and the per-step histograms; that is how the rules above
-  were found.
-- Onset times must be absolutely right, not just consistent, because the
-  grid's bar boundaries come from them and the track is played against the
-  grid. The flux peak sits when the attack is near the middle of the 2048
-  window, so a frame's time is `frame * hop + N/2`; the earlier end-of-window
-  formula ran about 15 ms late and made the synth drums lag the record. The
-  low band fills in 10 to 15 ms after a kick's click, so a kick is timed
-  where its low-band amplitude has risen a fifth of the way to its peak, not
-  at the flux peak. Do not borrow another band's onset time for a kick: a
-  hat on the grid under a late kick sits in the same event and would erase
-  the kick's lateness. Check absolute timing against the generated loops,
-  where every hit's true time is known. Resolution is about 5 ms (hop 256
-  at 48 kHz).
 - Sound only starts after a click, so the AudioContext is created lazily in
-  `Engine.ensureAudio`.
+  `Engine.ensureAudio`. The clipboard also needs a real user gesture; a
+  scripted click shows the "Could not copy" toast and that is expected.
+- A killed `react-scripts start` can leave a child on the port serving a
+  stale bundle with a failing HMR socket; check `lsof -ti:<port>` and kill that
+  PID, or use another port. After a code change, navigate with a fresh query
+  string so the browser pane does not reuse a cached bundle.
+- Hats on this kind of track also land at sextuplet positions. If that ever
+  matters, the next step is a 6-per-beat grid, which changes the grid layout.
