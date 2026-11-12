@@ -1,14 +1,15 @@
 /* Grid cells: the coloured cell is the grid position; the mark inside slides early or late by --shiftf steps. */
 .rl-cell {
   position: relative;
-  width: var(--cell);
-  height: var(--cell);
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
 }
 .rl-cell.on::after {
   content: '';
   position: absolute;
   top: 50%;
-  left: calc(50% + var(--cell) * var(--shiftf, 0));
+  left: calc(50% + 100% * var(--shiftf, 0));
   transform: translate(-50%, -50%);
 }
 .rl-cell.kick.on::after { width: 60%; height: 60%; border-radius: 50%; background: #1c1006; opacity: 0.85; }

@@ -20,9 +20,10 @@ const Grid = ({ lab }: { lab: RhythmLab }) => {
   const { state, nowStep, toggleCell, toggleMute, setRes, setBars, clear, saveMine, copyAsJson } = lab;
   const [saveName, setSaveName] = useState('');
   const per = RES[state.res].steps, spb = stepsPerBar(state.res), total = spb * state.bars;
-  const cellSize = state.bars === 2 ? '26px' : '30px';
-  const columns = state.bars === 2 ? `auto repeat(${spb}, var(--cell)) 10px repeat(${spb}, var(--cell))` : `auto repeat(${total}, var(--cell))`;
-  const style = { gridTemplateColumns: columns, '--cell': cellSize } as CSSProperties;
+  // Columns shrink to fit the container, so the whole pattern is always in view, and never grow past 34px.
+  const track = 'minmax(0, 34px)';
+  const columns = state.bars === 2 ? `auto repeat(${spb}, ${track}) 10px repeat(${spb}, ${track})` : `auto repeat(${total}, ${track})`;
+  const style = { gridTemplateColumns: columns } as CSSProperties;
 
   return (
     <section className="grid gap-4">
@@ -75,8 +76,8 @@ const Grid = ({ lab }: { lab: RhythmLab }) => {
           </button>
         </div>
         <p className="text-xs text-zinc-400">{state.mystery ? 'Listen first. The hits are hidden until you answer.' : state.purpose}</p>
-        <div className="overflow-x-auto pb-1">
-          <div className={clsx('rl-grid grid w-max gap-[3px]', state.mystery && 'mystery')} style={style}>
+        <div className="pb-1">
+          <div className={clsx('rl-grid grid w-full gap-[3px]', state.mystery && 'mystery')} style={style}>
             <div />
             {Array.from({ length: total }, (_, i) => {
               const sub = i % per, beatNo = Math.floor((i % spb) / per) + 1;
@@ -84,8 +85,8 @@ const Grid = ({ lab }: { lab: RhythmLab }) => {
                 <div
                   key={`l${i}`}
                   className={clsx(
-                    'grid h-7 place-items-center rounded-md text-xs tabular-nums',
-                    sub === 0 ? 'bg-white/5 text-base font-bold text-zinc-100' : 'text-zinc-500'
+                    'grid h-6 min-w-0 place-items-center overflow-hidden rounded-md text-[10px] tabular-nums sm:text-xs',
+                    sub === 0 ? 'bg-white/5 text-sm font-bold text-zinc-100 sm:text-base' : 'text-zinc-500'
                   )}
                 >
                   {sub === 0 ? beatNo : RES[state.res].labels[sub]}
@@ -128,13 +129,13 @@ const Row = ({ inst, lab, total, per, spb, nowStep, toggleCell, toggleMute }: Ro
   const off = state.offsets[inst];
   return (
     <>
-      <div className={clsx('flex min-w-[112px] items-center gap-2 pr-2 text-xs font-semibold', INST_TEXT[inst])}>
-        <span className="h-2.5 w-2.5 flex-none rounded-full bg-current" />
+      <div className={clsx('flex items-center gap-1.5 pr-2 text-xs font-semibold sm:min-w-[112px] sm:gap-2', INST_TEXT[inst])}>
+        <span className="hidden h-2.5 w-2.5 flex-none rounded-full bg-current sm:inline-block" />
         <span className="text-zinc-100">{INST_NAME[inst]}</span>
-        <span className="ml-auto whitespace-nowrap text-[11px] font-medium text-zinc-400">{off ? fmtOff(off) : ''}</span>
+        <span className="ml-auto hidden whitespace-nowrap text-[11px] font-medium text-zinc-400 md:inline">{off ? fmtOff(off) : ''}</span>
         <button
           type="button"
-          className="rl-switch ml-1.5"
+          className="rl-switch ml-auto md:ml-1.5"
           aria-pressed={on}
           aria-label={`${INST_NAME[inst]} ${on ? 'on' : 'off'}`}
           title={`Hear ${INST_NAME[inst]}`}
