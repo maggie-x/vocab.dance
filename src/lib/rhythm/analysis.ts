@@ -60,7 +60,7 @@ export interface BarDetection {
   /** Per-cell corrections so playback lands on each hit's detected time, not just the row average. */
   nudges: Nudges;
   hits: Record<Inst, BarHit[]>;
-  /** Hits that fit no 16th even with swing, usually triplets, left out of the grid. */
+  /** Hits left out because a stronger hit took the same cell. */
   offGrid: number;
 }
 
@@ -384,8 +384,10 @@ export async function analyseAudio(
 
 /**
  * Snaps the detected hits of one or two consecutive bars onto the grid at the given resolution (8ths, 16ths or
- * triplets) with the average timing per instrument. The second bar follows the first; it stays empty when the
- * track ends first.
+ * triplets). Every hit goes to its nearest cell and keeps its true timing through the cell's nudge, so a hat on a
+ * triplet lands in the nearest 16th a third of a step off rather than being lost. When two hits want the same
+ * cell the stronger wins and the other is counted in `offGrid`. The second bar follows the first; it stays empty
+ * when the track ends first.
  */
 export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1, res: Res = '16'): BarDetection {
   const per = RES[res].steps, spb = stepsPerBar(res), stepLen = a.beatLen / per;
@@ -402,11 +404,8 @@ export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1, res: Res
     for (const o of inRange) {
       const rel = (o.t - start) / stepLen, step = Math.round(rel);
       if (step < 0 || step >= spb * count) continue;
-      // Swing only delays the odd steps, by up to half a step at 75%, so those may run late. Other steps may lag
-      // a laid-back 0.4 of a step. Anything earlier than 0.3 of a step is not on this grid.
-      const dev = rel - step, lateLimit = swings && step % 2 === 1 ? 0.5 : 0.4;
-      if (dev < -0.3 || dev > lateLimit) { offGrid++; continue; }
       const cur = byStep.get(step);
+      if (cur) offGrid++;
       if (!cur || o.s > cur.s) byStep.set(step, o);
     }
     byStep.forEach((o, step) => {
@@ -435,7 +434,10 @@ export function detectBar(a: TrackAnalysis, barIndex: number, bars = 1, res: Res
     hat: clamp(mean(evenDev(hits.hat))),
   };
   offsets.ghost = offsets.snare;
-  const oddHatDelay = swings ? mean(hits.hat.filter((h) => h.step % 2 === 1).map((h) => h.dev - offsets.hat)) : 0;
+  // Swing is read from the odd-step hats that run late; hats early of an odd step are not swing and are left to
+  // their nudges.
+  const lateOdd = hits.hat.filter((h) => h.step % 2 === 1 && h.dev - offsets.hat >= 0).map((h) => h.dev - offsets.hat);
+  const oddHatDelay = swings ? mean(lateOdd) : 0;
   const swing = Math.round(Math.max(50, Math.min(75, 50 + 25 * (oddHatDelay / (0.5 * stepLen * 1000)))));
   const nudges = emptyNudges(spb * bars);
   for (const inst of Object.keys(hits) as Inst[]) {

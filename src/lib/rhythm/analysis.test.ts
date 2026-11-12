@@ -104,20 +104,37 @@ describe('detectBar', () => {
     expect(trip.rows.snare.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([3, 9]);
     expect(trip.offGrid).toBe(0);
     expect(trip.swing).toBe(50);
-    const sixteenths = detectBar(a, 1, 1, '16');
-    expect(sixteenths.offGrid).toBeGreaterThan(0);
+    expect(trip.nudges.hat.every((n) => Math.abs(n) <= 3)).toBe(true);
   });
-  it('keeps a heavily swung offbeat but drops hits that fit no 16th', () => {
+  it('keeps triplet hats on the 16th grid in the nearest cell with their true timing as nudges', () => {
     const bpm = 90, beat = 60 / bpm, start = 0.5, step = beat / 4;
     const o = backbeat(bpm, 2, start);
     const hit = (t: number): Hit => ({ i: Math.round((t * SR) / HOP), t, s: 0.5 });
     const bar2 = start + 4 * beat;
-    // A swung "e" 0.45 step late, a hit 0.45 step early of the "&", and a triplet pair in beat 2.
-    o.hat = [hit(bar2), hit(bar2 + step * 1.45), hit(bar2 + step * 1.55), hit(bar2 + beat + beat / 3), hit(bar2 + beat + (2 * beat) / 3)];
+    o.hat = [];
+    for (let b = 0; b < 4; b++) for (let k = 0; k < 3; k++) o.hat.push(hit(bar2 + b * beat + (k * beat) / 3));
     const a: TrackAnalysis = { bpm, beatLen: beat, phase: start, bars: buildBars(start, beat, 20), onsets: o, duration: 20 };
-    const det = detectBar(a, 1);
-    expect(det.rows.hat.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 1, 5]);
-    expect(det.offGrid).toBe(2);
+    const det = detectBar(a, 1, 1, '16');
+    // 0, 1.33, 2.67 of each beat -> cells 0, 1 and 3; nothing is lost.
+    expect(det.rows.hat.filter(Boolean)).toHaveLength(12);
+    expect(det.rows.hat.map((v, i) => (v ? i : -1)).filter((i) => i >= 0)).toEqual([0, 1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15]);
+    expect(det.offGrid).toBe(0);
+    // Playback time = step + swing + hat offset + nudge must land on the true triplet position.
+    const swingMs = (s: number) => (s % 2 === 1 ? ((det.swing - 50) / 25) * 0.5 * step * 1000 : 0);
+    const played = (s: number) => s * step * 1000 + swingMs(s) + det.offsets.hat + det.nudges.hat[s];
+    expect(Math.abs(played(1) - (beat / 3) * 1000)).toBeLessThan(3);
+    expect(Math.abs(played(3) - ((2 * beat) / 3) * 1000)).toBeLessThan(3);
+  });
+  it('counts a hit that loses its cell to a stronger one', () => {
+    const bpm = 90, beat = 60 / bpm, start = 0.5, step = beat / 4;
+    const o = backbeat(bpm, 2, start);
+    const bar2 = start + 4 * beat;
+    // Both round to the beat cell; the louder one keeps it.
+    o.hat = [{ i: 0, t: bar2 + step * 0.2, s: 0.9 }, { i: 0, t: bar2 + step * 0.45, s: 0.3 }].map((h) => ({ ...h, i: Math.round((h.t * SR) / HOP) }));
+    const a: TrackAnalysis = { bpm, beatLen: beat, phase: start, bars: buildBars(start, beat, 20), onsets: o, duration: 20 };
+    const det = detectBar(a, 1, 1, '16');
+    expect(det.rows.hat.filter(Boolean)).toHaveLength(1);
+    expect(det.offGrid).toBe(1);
   });
 });
 

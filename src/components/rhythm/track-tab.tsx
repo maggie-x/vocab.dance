@@ -93,7 +93,7 @@ const TrackTab = ({ lab }: { lab: RhythmLab }) => {
               <button type="button" className={btn} onClick={detectCurrentBar}>{twoBars ? 'Detect these bars' : 'Detect this bar'}</button>
             </div>
             <p className="text-xs text-zinc-400">
-              Play through runs the track from the chosen bar to the end while your grid pattern loops alongside it. Edit cells until the grid matches what you hear. Moving bars keeps your pattern; Detect replaces it with a fresh guess. The bars and resolution switches above the grid set how many bars are read and onto which grid: use Triplets for triplet hats. Use Hear to listen to the track alone, your grid drums alone, or both together.
+              Play through runs the track from the chosen bar to the end while your grid pattern loops alongside it. Edit cells until the grid matches what you hear. Moving bars keeps your pattern; Detect replaces it with a fresh guess. The bars and resolution switches above the grid set how many bars are read and onto which grid; hits between steps keep their true timing in the nearest cell. Use Hear to listen to the track alone, your grid drums alone, or both together.
             </p>
             <TrackCanvas track={track} onPick={setBarIndex} />
             {track.hits && <HitList hits={track.hits} offGrid={track.offGrid} res={lab.state.res} />}
@@ -121,8 +121,8 @@ const HitList = ({ hits, offGrid, res }: { hits: Record<Inst, { step: number; de
           <>
             {' '}
             <span className="text-amber-300">
-              {offGrid} hit{offGrid === 1 ? '' : 's'} in this bar sit between grid steps and are left out. They still show in the lanes above.
-              {res === '16' ? ' Hats on triplets are the usual cause; switch the grid to Triplets to read them.' : res === '12' ? ' Try 16ths if these are straight hits.' : ' Try 16ths for finer detail.'}
+              {offGrid} hit{offGrid === 1 ? '' : 's'} in this bar shared a cell with a stronger hit and {offGrid === 1 ? 'was' : 'were'} left out. They still show in the lanes above.
+              {res === '8' ? ' Try 16ths for finer detail.' : ''}
             </span>
           </>
         )}
