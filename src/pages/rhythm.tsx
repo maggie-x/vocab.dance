@@ -6,12 +6,14 @@ import DanceTab from '../components/rhythm/dance-tab';
 import Grid from '../components/rhythm/grid';
 import GroovesTab from '../components/rhythm/grooves-tab';
 import LearnTab from '../components/rhythm/learn-tab';
+import RhythmsTab from '../components/rhythm/rhythms-tab';
 import TrackTab from '../components/rhythm/track-tab';
 import Transport from '../components/rhythm/transport';
 import { useRhythmLab } from '../hooks/use-rhythm-lab';
 
-type Tab = 'grooves' | 'analyse' | 'learn' | 'practice';
+type Tab = 'rhythms' | 'grooves' | 'analyse' | 'learn' | 'practice';
 const TABS: Array<{ id: Tab; label: string }> = [
+  { id: 'rhythms', label: 'Rhythms' },
   { id: 'grooves', label: 'Grooves' },
   { id: 'analyse', label: 'Your track' },
   { id: 'learn', label: 'Dilla feel' },
@@ -20,7 +22,7 @@ const TABS: Array<{ id: Tab; label: string }> = [
 
 const RhythmPage = () => {
   const lab = useRhythmLab();
-  const [tab = 'grooves', setTab] = useLocalStorage<Tab>('rhythm.tab', 'grooves');
+  const [tab = 'rhythms', setTab] = useLocalStorage<Tab>('rhythm.tab', 'rhythms');
   useTitle('Kick & Snare Lab | Dance Vocab Index');
 
   useEffect(() => {
@@ -67,6 +69,7 @@ const RhythmPage = () => {
             </button>
           ))}
         </div>
+        <div role="tabpanel" hidden={tab !== 'rhythms'}><RhythmsTab lab={lab} /></div>
         <div role="tabpanel" hidden={tab !== 'grooves'}><GroovesTab lab={lab} /></div>
         <div role="tabpanel" hidden={tab !== 'analyse'}><TrackTab lab={lab} /></div>
         <div role="tabpanel" hidden={tab !== 'learn'}><LearnTab lab={lab} /></div>
