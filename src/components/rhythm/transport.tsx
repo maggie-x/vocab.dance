@@ -8,10 +8,9 @@ const Icon = ({ d }: { d: string }) => (
 );
 const PLAY = 'M4 2.5v11l9-5.5z';
 const PAUSE = 'M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z';
-const STOP = 'M3 3h10v10H3z';
 
 const Transport = ({ lab }: { lab: RhythmLab }) => {
-  const { state, playing, beat, togglePlay, stop, setMetronome } = lab;
+  const { state, playing, beat, togglePlay, setMetronome } = lab;
   return (
     <div className="sticky top-0 z-10 rounded-xl border border-zinc-700 bg-zinc-800 p-3 shadow-lg shadow-black/30">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -26,15 +25,6 @@ const Transport = ({ lab }: { lab: RhythmLab }) => {
         >
           <Icon d={playing ? PAUSE : PLAY} />
           {playing ? 'Pause' : 'Play'}
-        </button>
-        <button
-          type="button"
-          onClick={stop}
-          title="Stop and go back to beat 1"
-          className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm hover:border-zinc-500"
-        >
-          <Icon d={STOP} />
-          Stop
         </button>
         <div className="flex gap-1.5" aria-label="Current beat">
           {[1, 2, 3, 4].map((b, i) => (
