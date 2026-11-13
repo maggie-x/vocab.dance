@@ -1,6 +1,15 @@
 import clsx from 'clsx';
 import { RhythmLab } from '../../hooks/use-rhythm-lab';
 
+const Icon = ({ d }: { d: string }) => (
+  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" className="shrink-0 fill-current">
+    <path d={d} />
+  </svg>
+);
+const PLAY = 'M4 2.5v11l9-5.5z';
+const PAUSE = 'M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z';
+const STOP = 'M3 3h10v10H3z';
+
 const Transport = ({ lab }: { lab: RhythmLab }) => {
   const { state, playing, beat, togglePlay, stop, setMetronome } = lab;
   return (
@@ -11,18 +20,20 @@ const Transport = ({ lab }: { lab: RhythmLab }) => {
           onClick={togglePlay}
           aria-pressed={playing}
           className={clsx(
-            'min-w-[92px] rounded-lg px-4 py-2 text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400',
+            'inline-flex min-w-[100px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400',
             playing ? 'bg-amber-400 text-zinc-900' : 'bg-zinc-100 text-zinc-900 hover:bg-white'
           )}
         >
+          <Icon d={playing ? PAUSE : PLAY} />
           {playing ? 'Pause' : 'Play'}
         </button>
         <button
           type="button"
           onClick={stop}
           title="Stop and go back to beat 1"
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm hover:border-zinc-500"
+          className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm hover:border-zinc-500"
         >
+          <Icon d={STOP} />
           Stop
         </button>
         <div className="flex gap-1.5" aria-label="Current beat">
