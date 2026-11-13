@@ -211,10 +211,13 @@ detection when the file is handy.
   shifted; that is the only visualisation of microtiming, by design.
 - Grid layout: columns are `max-content` for the row header and
   `minmax(0, 34px)` per cell, with a real spacer column between bars, and the
-  grid justifies to the start. Cells shrink to fit so the whole pattern is
-  always in view with no sideways scroll. An `auto` header track absorbed free
-  space when wide and was handed less than its content when tight; margins on
-  cells spilled into neighbours. Do not reintroduce either.
+  grid justifies to the start. From 640px up, cells shrink to fit so the whole
+  pattern is always in view with no sideways scroll. Below 640px the grid keeps
+  `min-width: max-content` (full 34px cells) and its wrapper `.rl-grid-scroll`
+  scrolls sideways, because squashed cells were unusable on a phone. An `auto`
+  header track absorbed free space when wide and was handed less than its
+  content when tight; margins on cells spilled into neighbours. Do not
+  reintroduce either.
 
 ### Testing
 

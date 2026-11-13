@@ -59,3 +59,9 @@
 @media (prefers-reduced-motion: reduce) {
   .rl-switch::after { transition: none; }
 }
+
+/* On phones the 16 columns keep their full size and the grid scrolls sideways; wider screens fit with no scroll. */
+@media (max-width: 639px) {
+  .rl-grid-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .rl-grid { min-width: max-content; }
+}
